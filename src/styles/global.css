@@ -63,3 +63,27 @@ button:hover {
 .status-warn {
   color: orange;
 }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.table th {
+  background: #f8fafc;
+}
+
+.danger-button {
+  background: #dc2626;
+}
+
+.danger-button:hover {
+  background: #b91c1c;
+}

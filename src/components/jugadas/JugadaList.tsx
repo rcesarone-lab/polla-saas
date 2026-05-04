@@ -8,33 +8,49 @@ type Props = {
 };
 
 export const JugadaList = ({ jugadas, resultado, onDelete }: Props) => {
+  if (jugadas.length === 0) {
+    return <p>No hay jugadas cargadas.</p>;
+  }
+
   return (
-    <ul>
-      {jugadas.map((j) => {
-        const puntos = resultado ? calcularPuntaje(j, resultado) : 0;
+    <table className="table">
+      <thead>
+        <tr>
+          <th>Jugador</th>
+          <th>Carrera 1</th>
+          <th>Carrera 2</th>
+          <th>Carrera 3</th>
+          <th>Puntos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
 
-        return (
-          <li key={j.id} style={{ marginBottom: "0.5rem" }}>
-            <strong>{j.nombre}</strong> → C1: {j.jugadas.carrera1} | C2:{" "}
-            {j.jugadas.carrera2} | C3: {j.jugadas.carrera3}
-            {" | "}
-            <span style={{ color: "green" }}>
-              {resultado ? `${puntos} pts` : "Sin resultados"}
-            </span>
+      <tbody>
+        {jugadas.map((j) => {
+          const puntos = resultado ? calcularPuntaje(j, resultado) : 0;
 
-            {"  "}
-            <button
-              style={{ marginLeft: "10px", background: "red" }}
-              onClick={() => {
-                const confirmDelete = confirm("¿Eliminar jugada?");
-                if (confirmDelete) onDelete(j.id);
-              }}
-            >
-              Eliminar
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+          return (
+            <tr key={j.id}>
+              <td>{j.nombre}</td>
+              <td>{j.jugadas.carrera1}</td>
+              <td>{j.jugadas.carrera2}</td>
+              <td>{j.jugadas.carrera3}</td>
+              <td>{resultado ? `${puntos} pts` : "Sin resultados"}</td>
+              <td>
+                <button
+                  className="danger-button"
+                  onClick={() => {
+                    const confirmar = confirm("¿Eliminar esta jugada?");
+                    if (confirmar) onDelete(j.id);
+                  }}
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 };
