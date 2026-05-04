@@ -6,7 +6,7 @@ import { JugadaList } from "../components/jugadas/JugadaList";
 import { Ranking } from "../components/jugadas/Ranking";
 
 export const Jugadas = () => {
-  const { jugadas, addJugada } = useJugadas();
+  const { jugadas, addJugada, deleteJugada } = useJugadas();
   const { resultado } = useResultados();
 
   const handleAdd = (data: {
@@ -48,7 +48,11 @@ export const Jugadas = () => {
       </div>
 
       <div className="card">
-        <JugadaList jugadas={jugadas} resultado={resultado} />
+        <JugadaList
+          jugadas={jugadas}
+          resultado={resultado}
+          onDelete={deleteJugada}
+        />
       </div>
 
       <div className="card">

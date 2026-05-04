@@ -15,5 +15,11 @@ export const useJugadas = () => {
     saveJugadas(nuevas);
   };
 
-  return { jugadas, addJugada };
+  const deleteJugada = (id: string) => {
+    const nuevas = jugadas.filter((j) => j.id !== id);
+    setJugadas(nuevas);
+    saveJugadas(nuevas);
+  };
+
+  return { jugadas, addJugada, deleteJugada };
 };
