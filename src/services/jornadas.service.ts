@@ -1,28 +1,28 @@
 import type { Jornada } from "../domain/types";
+import { storage } from "../api/storage";
 
 const KEY_LIST = "jornadas";
 const KEY_ACTUAL = "jornadaActual";
 
 export const getJornadas = (): Jornada[] => {
-  const data = localStorage.getItem(KEY_LIST);
-  return data ? JSON.parse(data) : [];
+  return storage.get<Jornada[]>(KEY_LIST, []);
 };
 
 export const saveJornadas = (jornadas: Jornada[]) => {
-  localStorage.setItem(KEY_LIST, JSON.stringify(jornadas));
+  storage.set(KEY_LIST, jornadas);
 };
 
 export const getJornadaActual = (): Jornada => {
-  const actual = localStorage.getItem(KEY_ACTUAL);
+  const actual = storage.get<Jornada | null>(KEY_ACTUAL, null);
 
   if (actual) {
-    return JSON.parse(actual);
+    return actual;
   }
 
   const jornadas = getJornadas();
 
   if (jornadas.length > 0) {
-    localStorage.setItem(KEY_ACTUAL, JSON.stringify(jornadas[0]));
+    storage.set(KEY_ACTUAL, jornadas[0]);
     return jornadas[0];
   }
 
@@ -33,13 +33,13 @@ export const getJornadaActual = (): Jornada => {
   };
 
   saveJornadas([nueva]);
-  localStorage.setItem(KEY_ACTUAL, JSON.stringify(nueva));
+  storage.set(KEY_ACTUAL, nueva);
 
   return nueva;
 };
 
 export const setJornadaActual = (jornada: Jornada) => {
-  localStorage.setItem(KEY_ACTUAL, JSON.stringify(jornada));
+  storage.set(KEY_ACTUAL, jornada);
 };
 
 export const crearJornada = (nombre: string): Jornada => {

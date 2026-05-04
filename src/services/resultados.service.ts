@@ -1,14 +1,14 @@
 import type { Resultado } from "../domain/types";
+import { storage } from "../api/storage";
 
 const KEY = "resultados";
 
 export const getResultados = (): Resultado[] => {
-  const data = localStorage.getItem(KEY);
-  return data ? JSON.parse(data) : [];
+  return storage.get<Resultado[]>(KEY, []);
 };
 
 export const saveResultados = (resultados: Resultado[]) => {
-  localStorage.setItem(KEY, JSON.stringify(resultados));
+  storage.set(KEY, resultados);
 };
 
 export const getResultadoByJornada = (jornadaId: string): Resultado | null => {

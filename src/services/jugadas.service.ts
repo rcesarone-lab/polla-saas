@@ -1,12 +1,12 @@
 import type { Jugada } from "../domain/types";
+import { storage } from "../api/storage";
 
 const KEY = "jugadas";
 
 export const getJugadas = (): Jugada[] => {
-  const data = localStorage.getItem(KEY);
-  return data ? JSON.parse(data) : [];
+  return storage.get<Jugada[]>(KEY, []);
 };
 
 export const saveJugadas = (jugadas: Jugada[]) => {
-  localStorage.setItem(KEY, JSON.stringify(jugadas));
+  storage.set(KEY, jugadas);
 };
