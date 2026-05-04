@@ -1,0 +1,19 @@
+import { useEffect, useState } from "react";
+import type { Jugada } from "../domain/types";
+import { getJugadas, saveJugadas } from "../services/jugadas.service";
+
+export const useJugadas = () => {
+  const [jugadas, setJugadas] = useState<Jugada[]>([]);
+
+  useEffect(() => {
+    setJugadas(getJugadas());
+  }, []);
+
+  const addJugada = (jugada: Jugada) => {
+    const nuevas = [...jugadas, jugada];
+    setJugadas(nuevas);
+    saveJugadas(nuevas);
+  };
+
+  return { jugadas, addJugada };
+};
