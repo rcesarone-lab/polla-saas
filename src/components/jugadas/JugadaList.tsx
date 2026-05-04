@@ -13,11 +13,12 @@ export const JugadaList = ({ jugadas, resultado }: Props) => {
         const puntos = resultado ? calcularPuntaje(j, resultado) : 0;
 
         return (
-          <li key={j.id}>
-            {j.nombre} → C1: {j.jugadas.carrera1} | C2:{" "}
-            {j.jugadas.carrera2} | C3: {j.jugadas.carrera3}
+          <li key={j.id} style={{ marginBottom: "0.5rem" }}>
+            <strong>{j.nombre}</strong> → C1: {j.jugadas.carrera1} | C2: {j.jugadas.carrera2} | C3: {j.jugadas.carrera3}
             {" | "}
-            <strong>{resultado ? `${puntos} pts` : "Sin resultados"}</strong>
+            <span style={{ color: "green" }}>
+              {resultado ? `${puntos} pts` : "Sin resultados"}
+            </span>
           </li>
         );
       })}

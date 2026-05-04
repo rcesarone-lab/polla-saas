@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
 type Props = {
@@ -10,7 +10,7 @@ export const Layout = ({ children }: Props) => {
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: "240px",
+          width: "220px",
           background: "#1e293b",
           color: "white",
           padding: "1rem",
@@ -33,9 +33,7 @@ export const Layout = ({ children }: Props) => {
         </nav>
       </aside>
 
-      <main style={{ flex: 1, background: "#f1f5f9", padding: "1.5rem" }}>
-        {children}
-      </main>
+      <main style={{ flex: 1, padding: "2rem" }}>{children}</main>
     </div>
   );
 };
