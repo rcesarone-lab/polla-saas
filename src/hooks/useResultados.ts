@@ -1,17 +1,21 @@
 import { useEffect, useState } from "react";
 import type { Resultado } from "../domain/types";
-import { getResultado, saveResultado } from "../services/resultados.service";
+import {
+  getResultadoByJornada,
+  saveResultadoByJornada,
+} from "../services/resultados.service";
 
-export const useResultados = () => {
+export const useResultados = (jornadaId?: string) => {
   const [resultado, setResultado] = useState<Resultado | null>(null);
 
   useEffect(() => {
-    setResultado(getResultado());
-  }, []);
+    if (!jornadaId) return;
+    setResultado(getResultadoByJornada(jornadaId));
+  }, [jornadaId]);
 
   const updateResultado = (nuevoResultado: Resultado) => {
     setResultado(nuevoResultado);
-    saveResultado(nuevoResultado);
+    saveResultadoByJornada(nuevoResultado);
   };
 
   return {

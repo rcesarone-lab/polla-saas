@@ -3,10 +3,11 @@ import type { Resultado } from "../../domain/types";
 
 type Props = {
   resultado: Resultado | null;
+  jornadaId: string;
   onSave: (resultado: Resultado) => void;
 };
 
-export const ResultadoForm = ({ resultado, onSave }: Props) => {
+export const ResultadoForm = ({ resultado, jornadaId, onSave }: Props) => {
   const [c1Primero, setC1Primero] = useState(resultado?.carrera1.primero.toString() ?? "");
   const [c1Segundo, setC1Segundo] = useState(resultado?.carrera1.segundo.toString() ?? "");
   const [c1Tercero, setC1Tercero] = useState(resultado?.carrera1.tercero.toString() ?? "");
@@ -47,6 +48,7 @@ export const ResultadoForm = ({ resultado, onSave }: Props) => {
     }
 
     const nuevoResultado: Resultado = {
+      jornadaId,
       carrera1: {
         primero: Number(c1Primero),
         segundo: Number(c1Segundo),

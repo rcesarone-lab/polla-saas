@@ -1,5 +1,6 @@
 export type Jugada = {
   id: string;
+  jornadaId: string;
   nombre: string;
   jugadas: {
     carrera1: number;
@@ -10,6 +11,7 @@ export type Jugada = {
 };
 
 export type Resultado = {
+  jornadaId: string;
   carrera1: {
     primero: number;
     segundo: number;
@@ -25,4 +27,10 @@ export type Resultado = {
     segundo: number;
     tercero: number;
   };
+};
+
+export type Jornada = {
+  id: string;
+  nombre: string;
+  fechaCreacion: string;
 };

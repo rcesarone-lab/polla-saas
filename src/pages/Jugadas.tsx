@@ -4,10 +4,17 @@ import type { Jugada } from "../domain/types";
 import { JugadaForm } from "../components/jugadas/JugadaForm";
 import { JugadaList } from "../components/jugadas/JugadaList";
 import { Ranking } from "../components/jugadas/Ranking";
+import { useJornada } from "../hooks/useJornada";
+import { JornadaSelector } from "../components/jornada/JornadaSelector";
 
 export const Jugadas = () => {
   const { jugadas, addJugada, deleteJugada } = useJugadas();
-  const { resultado } = useResultados();
+  const { jornada, jornadas, changeJornada, addJornada } = useJornada();
+  const { resultado } = useResultados(jornada?.id);
+
+  if (!jornada) {
+    return <p>Cargando jornada...</p>;
+  }
 
   const handleAdd = (data: {
     nombre: string;
@@ -15,19 +22,21 @@ export const Jugadas = () => {
     carrera2: number;
     carrera3: number;
   }) => {
-
     const existeNombre = jugadas.some(
-      (j) => j.nombre.toLowerCase() === data.nombre.trim().toLowerCase()
+      (j) =>
+        j.jornadaId === jornada.id &&
+        j.nombre.toLowerCase() === data.nombre.trim().toLowerCase()
     );
 
     if (existeNombre) {
-      alert("Ya existe una jugada con ese nombre");
+      alert("Ya existe una jugada con ese nombre en esta jornada");
       return;
     }
 
     const jugada: Jugada = {
       id: Date.now().toString(),
-      nombre: data.nombre,
+      jornadaId: jornada.id,
+      nombre: data.nombre.trim(),
       jugadas: {
         carrera1: data.carrera1,
         carrera2: data.carrera2,
@@ -39,9 +48,25 @@ export const Jugadas = () => {
     addJugada(jugada);
   };
 
+  const jugadasDeLaJornada = jugadas.filter(
+    (j) => j.jornadaId === jornada.id
+  );
+
   return (
     <div className="grid">
+
+<JornadaSelector
+  jornadas={jornadas}
+  jornadaActual={jornada}
+  onChange={changeJornada}
+  onCreate={addJornada}
+/>
+
       <h1>Jugadas</h1>
+
+      <p>
+        Jornada: {jornada.nombre} - {jornada.id}
+      </p>
 
       <div className="card">
         <JugadaForm onSubmit={handleAdd} />
@@ -49,14 +74,14 @@ export const Jugadas = () => {
 
       <div className="card">
         <JugadaList
-          jugadas={jugadas}
+          jugadas={jugadasDeLaJornada}
           resultado={resultado}
           onDelete={deleteJugada}
         />
       </div>
 
       <div className="card">
-        <Ranking jugadas={jugadas} resultado={resultado} />
+        <Ranking jugadas={jugadasDeLaJornada} resultado={resultado} />
       </div>
     </div>
   );
