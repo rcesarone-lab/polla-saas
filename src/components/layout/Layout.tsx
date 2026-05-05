@@ -36,6 +36,10 @@ export const Layout = ({ children }: Props) => {
           <Link style={{ color: "white", textDecoration: "none" }} to="/resultados">
             Resultados
           </Link>
+
+          <Link style={{ color: "white", textDecoration: "none" }} to="/historico">
+            Histórico
+          </Link>
         </nav>
       </aside>
 

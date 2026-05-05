@@ -3,6 +3,7 @@ import { Layout } from "./components/layout/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Jugadas } from "./pages/Jugadas";
 import { Resultados } from "./pages/Resultados";
+import { Historico } from "./pages/Historico";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/jugadas" element={<Jugadas />} />
           <Route path="/resultados" element={<Resultados />} />
+          <Route path="/historico" element={<Historico />} />
         </Routes>
       </Layout>
     </BrowserRouter>
