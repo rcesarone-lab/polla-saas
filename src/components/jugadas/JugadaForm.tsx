@@ -1,19 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { Jugada } from "../../domain/types";
 
-type Props = {
-  onSubmit: (data: {
-    nombre: string;
-    carrera1: number;
-    carrera2: number;
-    carrera3: number;
-  }) => void;
+type FormData = {
+  nombre: string;
+  carrera1: number;
+  carrera2: number;
+  carrera3: number;
 };
 
-export const JugadaForm = ({ onSubmit }: Props) => {
+type Props = {
+  jugadaEditando: Jugada | null;
+  onSubmit: (data: FormData) => void;
+  onCancelEdit: () => void;
+};
+
+export const JugadaForm = ({
+  jugadaEditando,
+  onSubmit,
+  onCancelEdit,
+}: Props) => {
   const [nombre, setNombre] = useState("");
   const [c1, setC1] = useState("");
   const [c2, setC2] = useState("");
   const [c3, setC3] = useState("");
+
+  useEffect(() => {
+    if (!jugadaEditando) {
+      setNombre("");
+      setC1("");
+      setC2("");
+      setC3("");
+      return;
+    }
+
+    setNombre(jugadaEditando.nombre);
+    setC1(jugadaEditando.jugadas.carrera1.toString());
+    setC2(jugadaEditando.jugadas.carrera2.toString());
+    setC3(jugadaEditando.jugadas.carrera3.toString());
+  }, [jugadaEditando]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,10 +68,12 @@ export const JugadaForm = ({ onSubmit }: Props) => {
       carrera3: n3,
     });
 
-    setNombre("");
-    setC1("");
-    setC2("");
-    setC3("");
+    if (!jugadaEditando) {
+      setNombre("");
+      setC1("");
+      setC2("");
+      setC3("");
+    }
   };
 
   return (
@@ -91,7 +117,15 @@ export const JugadaForm = ({ onSubmit }: Props) => {
         />
       </div>
 
-      <button type="submit">Guardar jugada</button>
+      <button type="submit">
+        {jugadaEditando ? "Actualizar jugada" : "Guardar jugada"}
+      </button>
+
+      {jugadaEditando && (
+        <button type="button" className="secondary-button" onClick={onCancelEdit}>
+          Cancelar edición
+        </button>
+      )}
     </form>
   );
 };

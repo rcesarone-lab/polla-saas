@@ -21,5 +21,14 @@ export const useJugadas = () => {
     saveJugadas(nuevas);
   };
 
-  return { jugadas, addJugada, deleteJugada };
+  const updateJugada = (jugadaActualizada: Jugada) => {
+    const nuevas = jugadas.map((j) =>
+      j.id === jugadaActualizada.id ? jugadaActualizada : j
+    );
+
+    setJugadas(nuevas);
+    saveJugadas(nuevas);
+  };
+
+  return { jugadas, addJugada, updateJugada, deleteJugada };
 };

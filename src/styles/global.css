@@ -113,3 +113,31 @@ button:hover {
 button {
   margin-right: 10px;
 }
+
+.points-cell {
+  font-weight: bold;
+  color: #2563eb;
+  background: #eff6ff;
+  text-align: center;
+}
+
+.total-cell {
+  font-weight: bold;
+  color: #047857;
+  background: #ecfdf5;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.secondary-button {
+  background: #475569;
+}
+
+.secondary-button:hover {
+  background: #334155;
+}

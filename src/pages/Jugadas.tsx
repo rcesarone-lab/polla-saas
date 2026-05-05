@@ -6,17 +6,19 @@ import { JugadaList } from "../components/jugadas/JugadaList";
 import { Ranking } from "../components/jugadas/Ranking";
 import { useJornada } from "../hooks/useJornada";
 import { JornadaSelector } from "../components/jornada/JornadaSelector";
+import { useState } from "react";
 
 export const Jugadas = () => {
-  const { jugadas, addJugada, deleteJugada } = useJugadas();
+  const { jugadas, addJugada, updateJugada, deleteJugada } = useJugadas();
   const { jornada, jornadas, changeJornada, addJornada } = useJornada();
   const { resultado } = useResultados(jornada?.id);
+  const [jugadaEditando, setJugadaEditando] = useState<Jugada | null>(null);
 
   if (!jornada) {
     return <p>Cargando jornada...</p>;
   }
 
-  const handleAdd = (data: {
+  const handleSubmitJugada = (data: {
     nombre: string;
     carrera1: number;
     carrera2: number;
@@ -25,6 +27,7 @@ export const Jugadas = () => {
     const existeNombre = jugadas.some(
       (j) =>
         j.jornadaId === jornada.id &&
+        j.id !== jugadaEditando?.id &&
         j.nombre.toLowerCase() === data.nombre.trim().toLowerCase()
     );
 
@@ -33,7 +36,23 @@ export const Jugadas = () => {
       return;
     }
 
-    const jugada: Jugada = {
+    if (jugadaEditando) {
+      const jugadaActualizada: Jugada = {
+        ...jugadaEditando,
+        nombre: data.nombre.trim(),
+        jugadas: {
+          carrera1: data.carrera1,
+          carrera2: data.carrera2,
+          carrera3: data.carrera3,
+        },
+      };
+
+      updateJugada(jugadaActualizada);
+      setJugadaEditando(null);
+      return;
+    }
+
+    const nuevaJugada: Jugada = {
       id: Date.now().toString(),
       jornadaId: jornada.id,
       nombre: data.nombre.trim(),
@@ -45,7 +64,7 @@ export const Jugadas = () => {
       fecha: new Date().toISOString(),
     };
 
-    addJugada(jugada);
+    addJugada(nuevaJugada);
   };
 
   const jugadasDeLaJornada = jugadas.filter(
@@ -55,12 +74,12 @@ export const Jugadas = () => {
   return (
     <div className="grid">
 
-<JornadaSelector
-  jornadas={jornadas}
-  jornadaActual={jornada}
-  onChange={changeJornada}
-  onCreate={addJornada}
-/>
+      <JornadaSelector
+        jornadas={jornadas}
+        jornadaActual={jornada}
+        onChange={changeJornada}
+        onCreate={addJornada}
+      />
 
       <h1>Jugadas</h1>
 
@@ -69,13 +88,18 @@ export const Jugadas = () => {
       </p>
 
       <div className="card">
-        <JugadaForm onSubmit={handleAdd} />
+        <JugadaForm
+          jugadaEditando={jugadaEditando}
+          onSubmit={handleSubmitJugada}
+          onCancelEdit={() => setJugadaEditando(null)}
+        />
       </div>
 
       <div className="card">
         <JugadaList
           jugadas={jugadasDeLaJornada}
           resultado={resultado}
+          onEdit={setJugadaEditando}
           onDelete={deleteJugada}
         />
       </div>
