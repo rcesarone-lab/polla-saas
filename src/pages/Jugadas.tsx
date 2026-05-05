@@ -65,7 +65,7 @@ export const Jugadas = () => {
       <h1>Jugadas</h1>
 
       <p>
-        Jornada: {jornada.nombre} - {jornada.id}
+        Jornada: {jornada.nombre} - {jornada.fecha}
       </p>
 
       <div className="card">

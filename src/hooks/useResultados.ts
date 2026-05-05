@@ -3,6 +3,7 @@ import type { Resultado } from "../domain/types";
 import {
   getResultadoByJornada,
   saveResultadoByJornada,
+  deleteResultadoByJornada,
 } from "../services/resultados.service";
 
 export const useResultados = (jornadaId?: string) => {
@@ -18,8 +19,15 @@ export const useResultados = (jornadaId?: string) => {
     saveResultadoByJornada(nuevoResultado);
   };
 
+  const deleteResultado = () => {
+    if (!jornadaId) return;
+    deleteResultadoByJornada(jornadaId);
+    setResultado(null);
+  };
+
   return {
     resultado,
     updateResultado,
+    deleteResultado,
   };
 };

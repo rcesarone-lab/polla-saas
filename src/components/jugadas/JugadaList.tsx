@@ -12,30 +12,41 @@ export const JugadaList = ({ jugadas, resultado, onDelete }: Props) => {
     return <p>No hay jugadas cargadas.</p>;
   }
 
+  const jugadasOrdenadas = [...jugadas].sort((a, b) => {
+    const puntosA = resultado ? calcularPuntaje(a, resultado) : 0;
+    const puntosB = resultado ? calcularPuntaje(b, resultado) : 0;
+
+    return puntosB - puntosA;
+  });
+
   return (
     <table className="table">
       <thead>
         <tr>
           <th>Jugador</th>
-          <th>Carrera 1</th>
-          <th>Carrera 2</th>
-          <th>Carrera 3</th>
-          <th>Puntos</th>
+          <th>C1</th>
+          <th>C2</th>
+          <th>C3</th>
+          <th>Total</th>
           <th>Acciones</th>
         </tr>
       </thead>
 
       <tbody>
-        {jugadas.map((j) => {
+        {jugadasOrdenadas.map((j) => {
           const puntos = resultado ? calcularPuntaje(j, resultado) : 0;
 
           return (
             <tr key={j.id}>
-              <td>{j.nombre}</td>
+              <td><strong>{j.nombre}</strong></td>
               <td>{j.jugadas.carrera1}</td>
               <td>{j.jugadas.carrera2}</td>
               <td>{j.jugadas.carrera3}</td>
-              <td>{resultado ? `${puntos} pts` : "Sin resultados"}</td>
+
+              <td>
+                <strong>{resultado ? puntos : "-"}</strong>
+              </td>
+
               <td>
                 <button
                   className="danger-button"

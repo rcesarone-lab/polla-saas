@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Resultado } from "../../domain/types";
 
 type Props = {
@@ -7,18 +7,40 @@ type Props = {
   onSave: (resultado: Resultado) => void;
 };
 
+const toInputValue = (value: number | null | undefined) =>
+  value === null || value === undefined ? "" : value.toString();
+
+const toNumberOrNull = (value: string): number | null => {
+  if (!value.trim()) return null;
+  return Number(value);
+};
+
 export const ResultadoForm = ({ resultado, jornadaId, onSave }: Props) => {
-  const [c1Primero, setC1Primero] = useState(resultado?.carrera1.primero.toString() ?? "");
-  const [c1Segundo, setC1Segundo] = useState(resultado?.carrera1.segundo.toString() ?? "");
-  const [c1Tercero, setC1Tercero] = useState(resultado?.carrera1.tercero.toString() ?? "");
+  const [c1Primero, setC1Primero] = useState("");
+  const [c1Segundo, setC1Segundo] = useState("");
+  const [c1Tercero, setC1Tercero] = useState("");
 
-  const [c2Primero, setC2Primero] = useState(resultado?.carrera2.primero.toString() ?? "");
-  const [c2Segundo, setC2Segundo] = useState(resultado?.carrera2.segundo.toString() ?? "");
-  const [c2Tercero, setC2Tercero] = useState(resultado?.carrera2.tercero.toString() ?? "");
+  const [c2Primero, setC2Primero] = useState("");
+  const [c2Segundo, setC2Segundo] = useState("");
+  const [c2Tercero, setC2Tercero] = useState("");
 
-  const [c3Primero, setC3Primero] = useState(resultado?.carrera3.primero.toString() ?? "");
-  const [c3Segundo, setC3Segundo] = useState(resultado?.carrera3.segundo.toString() ?? "");
-  const [c3Tercero, setC3Tercero] = useState(resultado?.carrera3.tercero.toString() ?? "");
+  const [c3Primero, setC3Primero] = useState("");
+  const [c3Segundo, setC3Segundo] = useState("");
+  const [c3Tercero, setC3Tercero] = useState("");
+
+  useEffect(() => {
+    setC1Primero(toInputValue(resultado?.carrera1.primero));
+    setC1Segundo(toInputValue(resultado?.carrera1.segundo));
+    setC1Tercero(toInputValue(resultado?.carrera1.tercero));
+
+    setC2Primero(toInputValue(resultado?.carrera2.primero));
+    setC2Segundo(toInputValue(resultado?.carrera2.segundo));
+    setC2Tercero(toInputValue(resultado?.carrera2.tercero));
+
+    setC3Primero(toInputValue(resultado?.carrera3.primero));
+    setC3Segundo(toInputValue(resultado?.carrera3.segundo));
+    setC3Tercero(toInputValue(resultado?.carrera3.tercero));
+  }, [resultado]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,34 +57,31 @@ export const ResultadoForm = ({ resultado, jornadaId, onSave }: Props) => {
       c3Tercero,
     ];
 
-    if (values.some((v) => !v.trim())) {
-      alert("Debes cargar todos los resultados");
-      return;
-    }
-
-    const numbers = values.map(Number);
+    const numbers = values
+      .filter((v) => v.trim())
+      .map(Number);
 
     if (numbers.some((n) => isNaN(n) || n <= 0)) {
-      alert("Todos los resultados deben ser números mayores a 0");
+      alert("Los resultados cargados deben ser números mayores a 0");
       return;
     }
 
     const nuevoResultado: Resultado = {
       jornadaId,
       carrera1: {
-        primero: Number(c1Primero),
-        segundo: Number(c1Segundo),
-        tercero: Number(c1Tercero),
+        primero: toNumberOrNull(c1Primero),
+        segundo: toNumberOrNull(c1Segundo),
+        tercero: toNumberOrNull(c1Tercero),
       },
       carrera2: {
-        primero: Number(c2Primero),
-        segundo: Number(c2Segundo),
-        tercero: Number(c2Tercero),
+        primero: toNumberOrNull(c2Primero),
+        segundo: toNumberOrNull(c2Segundo),
+        tercero: toNumberOrNull(c2Tercero),
       },
       carrera3: {
-        primero: Number(c3Primero),
-        segundo: Number(c3Segundo),
-        tercero: Number(c3Tercero),
+        primero: toNumberOrNull(c3Primero),
+        segundo: toNumberOrNull(c3Segundo),
+        tercero: toNumberOrNull(c3Tercero),
       },
     };
 
@@ -88,7 +107,7 @@ export const ResultadoForm = ({ resultado, jornadaId, onSave }: Props) => {
       <input type="number" placeholder="3er lugar" value={c3Tercero} onChange={(e) => setC3Tercero(e.target.value)} />
 
       <br />
-      <button type="submit">Guardar resultados</button>
+      <button type="submit">Guardar / actualizar resultados</button>
     </form>
   );
 };

@@ -29,8 +29,15 @@ export type Resultado = {
   };
 };
 
-export type Jornada = {
-  id: string;
-  nombre: string;
-  fechaCreacion: string;
+export type PosicionResultado = {
+  primero: number | null;
+  segundo: number | null;
+  tercero: number | null;
+};
+
+export type Resultado = {
+  jornadaId: string;
+  carrera1: PosicionResultado;
+  carrera2: PosicionResultado;
+  carrera3: PosicionResultado;
 };

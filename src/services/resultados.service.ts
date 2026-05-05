@@ -29,3 +29,9 @@ export const saveResultadoByJornada = (resultado: Resultado) => {
 
   saveResultados(nuevos);
 };
+
+export const deleteResultadoByJornada = (jornadaId: string) => {
+  const resultados = getResultados();
+  const nuevos = resultados.filter((r) => r.jornadaId !== jornadaId);
+  saveResultados(nuevos);
+};

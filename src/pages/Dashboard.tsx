@@ -26,6 +26,8 @@ export const Dashboard = () => {
       .slice(0, 3)
     : [];
 
+  const ganador = ranking.length > 0 ? ranking[0] : null;
+
   return (
     <div>
       <h1>Dashboard</h1>
@@ -33,12 +35,14 @@ export const Dashboard = () => {
       <div className="dashboard-grid">
         <div className="card">
           <h2>Jornada actual</h2>
-          <p>{jornada.nombre}</p>
+          <p>{jornada.nombre} - {jornada.fecha}</p>
         </div>
 
         <div className="card">
           <h2>Total jugadas</h2>
-          <p>{jugadasDeLaJornada.length}</p>
+          <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
+            {jugadasDeLaJornada.length}
+          </p>
         </div>
 
         <div className="card">
@@ -46,6 +50,18 @@ export const Dashboard = () => {
           <p className={resultado ? "status-ok" : "status-warn"}>
             {resultado ? "Resultados cargados" : "Sin resultados"}
           </p>
+        </div>
+
+        <div className="card">
+          <h2>Ganador</h2>
+
+          {!ganador ? (
+            <p>No disponible</p>
+          ) : (
+            <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "green" }}>
+              {ganador.nombre} → {ganador.puntos} pts
+            </p>
+          )}
         </div>
 
         <div className="card">
@@ -62,6 +78,7 @@ export const Dashboard = () => {
             </ol>
           )}
         </div>
+
       </div>
     </div>
   );

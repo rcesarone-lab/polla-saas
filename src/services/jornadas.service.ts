@@ -4,6 +4,10 @@ import { storage } from "../api/storage";
 const KEY_LIST = "jornadas";
 const KEY_ACTUAL = "jornadaActual";
 
+const NOMBRE_JORNADA = "Polla";
+
+const getFechaHoy = () => new Date().toISOString().slice(0, 10);
+
 export const getJornadas = (): Jornada[] => {
   return storage.get<Jornada[]>(KEY_LIST, []);
 };
@@ -15,9 +19,7 @@ export const saveJornadas = (jornadas: Jornada[]) => {
 export const getJornadaActual = (): Jornada => {
   const actual = storage.get<Jornada | null>(KEY_ACTUAL, null);
 
-  if (actual) {
-    return actual;
-  }
+  if (actual) return actual;
 
   const jornadas = getJornadas();
 
@@ -26,9 +28,12 @@ export const getJornadaActual = (): Jornada => {
     return jornadas[0];
   }
 
+  const hoy = getFechaHoy();
+
   const nueva: Jornada = {
-    id: Date.now().toString(),
-    nombre: "Jornada 1",
+    id: hoy,
+    nombre: NOMBRE_JORNADA,
+    fecha: hoy,
     fechaCreacion: new Date().toISOString(),
   };
 
@@ -42,12 +47,19 @@ export const setJornadaActual = (jornada: Jornada) => {
   storage.set(KEY_ACTUAL, jornada);
 };
 
-export const crearJornada = (nombre: string): Jornada => {
+export const crearJornada = (fecha: string): Jornada => {
   const jornadas = getJornadas();
 
+  const existeFecha = jornadas.some((j) => j.fecha === fecha);
+
+  if (existeFecha) {
+    throw new Error("Ya existe una jornada para esa fecha");
+  }
+
   const nueva: Jornada = {
-    id: Date.now().toString(),
-    nombre,
+    id: fecha,
+    nombre: NOMBRE_JORNADA,
+    fecha,
     fechaCreacion: new Date().toISOString(),
   };
 

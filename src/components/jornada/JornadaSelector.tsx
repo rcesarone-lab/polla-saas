@@ -1,11 +1,13 @@
 import { useState } from "react";
 import type { Jornada } from "../../domain/types";
 
+const getFechaHoy = () => new Date().toISOString().slice(0, 10);
+
 type Props = {
   jornadas: Jornada[];
   jornadaActual: Jornada | null;
   onChange: (id: string) => void;
-  onCreate: (nombre: string) => void;
+  onCreate: (fecha: string) => void;
 };
 
 export const JornadaSelector = ({
@@ -14,36 +16,51 @@ export const JornadaSelector = ({
   onChange,
   onCreate,
 }: Props) => {
-  const [nombre, setNombre] = useState("");
+  const [fecha, setFecha] = useState(getFechaHoy());
 
   return (
-    <div style={{ marginBottom: "1rem" }}>
-      <select
-        value={jornadaActual?.id}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {jornadas.map((j) => (
-          <option key={j.id} value={j.id}>
-            {j.nombre}
-          </option>
-        ))}
-      </select>
+    <div className="card">
+      <h2>Jornada</h2>
 
-      <input
-        placeholder="Nueva jornada"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-      />
+      <div className="form-grid">
+        <div className="form-field">
+          <label>Seleccionar jornada</label>
+          <select
+            value={jornadaActual?.id ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+          >
+            {jornadas.map((j) => (
+              <option key={j.id} value={j.id}>
+                {j.nombre} - {j.fecha}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <button
-        onClick={() => {
-          if (!nombre.trim()) return;
-          onCreate(nombre);
-          setNombre("");
-        }}
-      >
-        Crear
-      </button>
+        <div className="form-field">
+          <label>Fecha</label>
+          <input
+            type="date"
+            value={fecha}
+            onChange={(e) => setFecha(e.target.value)}
+          />
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!fecha) {
+              alert("La fecha de la jornada es obligatoria");
+              return;
+            }
+
+            onCreate(fecha);
+            setFecha(getFechaHoy());
+          }}
+        >
+          Crear jornada
+        </button>
+      </div>
     </div>
   );
 };

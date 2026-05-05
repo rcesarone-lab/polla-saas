@@ -27,11 +27,15 @@ export const useJornada = () => {
     setJornadaActual(nueva);
   };
 
-  const addJornada = (nombre: string) => {
-    const nueva = crearJornada(nombre);
-    setJornadas((prev) => [...prev, nueva]);
-    setJornada(nueva);
-    setJornadaActual(nueva);
+  const addJornada = (fecha: string) => {
+    try {
+      const nueva = crearJornada(fecha);
+      setJornadas((prev) => [...prev, nueva]);
+      setJornada(nueva);
+      setJornadaActual(nueva);
+    } catch (error) {
+      alert("Ya existe una jornada para esa fecha");
+    }
   };
 
   return {

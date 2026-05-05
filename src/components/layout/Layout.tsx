@@ -5,15 +5,21 @@ type Props = {
   children: ReactNode;
 };
 
+const SIDEBAR_WIDTH = 160;
+
 export const Layout = ({ children }: Props) => {
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: "220px",
+          width: "160px",
           background: "#1e293b",
           color: "white",
           padding: "1rem",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          bottom: 0,
         }}
       >
         <h2>Polla SaaS</h2>
@@ -33,7 +39,23 @@ export const Layout = ({ children }: Props) => {
         </nav>
       </aside>
 
-      <main style={{ flex: 1, padding: "2rem" }}>{children}</main>
+      <main
+        style={{
+          marginLeft: "160px",
+          padding: "2rem 3rem", // más aire horizontal
+          minHeight: "100vh",
+          background: "#f3f4f6",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
+          {children}
+        </div>
+      </main>
     </div>
   );
 };

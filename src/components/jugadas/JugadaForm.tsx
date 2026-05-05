@@ -38,7 +38,7 @@ export const JugadaForm = ({ onSubmit }: Props) => {
     }
 
     onSubmit({
-      nombre,
+      nombre: nombre.trim(),
       carrera1: n1,
       carrera2: n2,
       carrera3: n3,
@@ -51,35 +51,47 @@ export const JugadaForm = ({ onSubmit }: Props) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        placeholder="Nombre"
-        value={nombre}
-        onChange={(e) => setNombre(e.target.value)}
-      />
+    <form onSubmit={handleSubmit} className="form-grid">
+      <div className="form-field">
+        <label>Jugador</label>
+        <input
+          placeholder="Ej: César"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Carrera 1"
-        value={c1}
-        onChange={(e) => setC1(e.target.value)}
-      />
+      <div className="form-field">
+        <label>Carrera 1</label>
+        <input
+          type="number"
+          placeholder="Nro caballo"
+          value={c1}
+          onChange={(e) => setC1(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Carrera 2"
-        value={c2}
-        onChange={(e) => setC2(e.target.value)}
-      />
+      <div className="form-field">
+        <label>Carrera 2</label>
+        <input
+          type="number"
+          placeholder="Nro caballo"
+          value={c2}
+          onChange={(e) => setC2(e.target.value)}
+        />
+      </div>
 
-      <input
-        type="number"
-        placeholder="Carrera 3"
-        value={c3}
-        onChange={(e) => setC3(e.target.value)}
-      />
+      <div className="form-field">
+        <label>Carrera 3</label>
+        <input
+          type="number"
+          placeholder="Nro caballo"
+          value={c3}
+          onChange={(e) => setC3(e.target.value)}
+        />
+      </div>
 
-      <button type="submit">Guardar</button>
+      <button type="submit">Guardar jugada</button>
     </form>
   );
 };
