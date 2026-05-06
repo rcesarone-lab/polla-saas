@@ -1,3 +1,10 @@
+export type Jornada = {
+  id: string;
+  nombre: string;
+  fecha: string;
+  fechaCreacion: string;
+};
+
 export type Jugada = {
   id: string;
   jornadaId: string;

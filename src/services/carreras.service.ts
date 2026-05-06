@@ -37,3 +37,11 @@ export const deleteCarreraValida = (id: string) => {
   const carreras = getCarrerasValidas();
   saveCarrerasValidas(carreras.filter((c) => c.id !== id));
 };
+
+export const deleteCarrerasByJornada = (jornadaId: string) => {
+  const carreras = getCarrerasValidas();
+
+  const nuevas = carreras.filter((c) => c.jornadaId !== jornadaId);
+
+  saveCarrerasValidas(nuevas);
+};

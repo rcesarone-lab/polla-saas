@@ -5,9 +5,10 @@ type Props = {
   carreras: CarreraValida[];
   onAdd: (numeroCarrera: number, cantidadEjemplares: number) => void;
   onDelete: (id: string) => void;
+  onDeleteAll: () => void;
 };
 
-export const CarrerasPanel = ({ carreras, onAdd, onDelete }: Props) => {
+export const CarrerasPanel = ({ carreras, onAdd, onDelete, onDeleteAll }: Props) => {
   const [numeroCarrera, setNumeroCarrera] = useState("");
   const [cantidadEjemplares, setCantidadEjemplares] = useState("");
 
@@ -59,6 +60,16 @@ export const CarrerasPanel = ({ carreras, onAdd, onDelete }: Props) => {
         <button type="button" onClick={handleAdd}>
           Agregar carrera
         </button>
+
+        {carreras.length > 0 && (
+          <button
+            type="button"
+            className="danger-button"
+            onClick={onDeleteAll}
+          >
+            Eliminar todas
+          </button>
+        )}
       </div>
 
       {carreras.length === 0 ? (

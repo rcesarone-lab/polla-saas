@@ -3,6 +3,7 @@ import type { CarreraValida } from "../domain/types";
 import {
   addCarreraValida,
   deleteCarreraValida,
+  deleteCarrerasByJornada,
   getCarrerasByJornada,
 } from "../services/carreras.service";
 
@@ -39,9 +40,17 @@ export const useCarreras = (jornadaId?: string) => {
     setCarreras(getCarrerasByJornada(jornadaId));
   };
 
+  const eliminarTodasCarreras = () => {
+    if (!jornadaId) return;
+
+    deleteCarrerasByJornada(jornadaId);
+    setCarreras([]);
+  };
+
   return {
     carreras,
     agregarCarrera,
     eliminarCarrera,
+    eliminarTodasCarreras,
   };
 };

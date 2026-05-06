@@ -7,6 +7,7 @@ import { RetiradosPanel } from "../components/retirados/RetiradosPanel";
 import { useCarreras } from "../hooks/useCarreras";
 import { CarrerasPanel } from "../components/carreras/CarrerasPanel";
 import { useJugadas } from "../hooks/useJugadas";
+import { useResultados } from "../hooks/useResultados";
 import { obtenerSiguienteDisponible } from "../domain/reasignarCaballo";
 import { getRetiradosByJornada } from "../services/retirados.service";
 
@@ -16,9 +17,12 @@ export const Configuracion = () => {
 
   const { jornada } = useJornada();
 
-  const { carreras, agregarCarrera, eliminarCarrera } = useCarreras(
-    jornada?.id
-  );
+  const {
+    carreras,
+    agregarCarrera,
+    eliminarCarrera,
+    eliminarTodasCarreras,
+  } = useCarreras(jornada?.id);
 
   const { retirados, agregarRetirado, eliminarRetirado } = useRetirados(
     jornada?.id
@@ -118,6 +122,79 @@ export const Configuracion = () => {
     }
   };
 
+  const { resultado } = useResultados(jornada?.id);
+
+  const tieneDatosAsociadosCarrera = (numeroCarrera: number) => {
+    if (!jornada) return false;
+
+    const tieneJugadas = jugadas.some(
+      (j) =>
+        j.jornadaId === jornada.id &&
+        j.jugadas[numeroCarrera] !== undefined
+    );
+
+    const tieneResultado =
+      resultado?.resultados[numeroCarrera] !== undefined;
+
+    const tieneRetirados = retirados.some(
+      (r) => r.carrera === numeroCarrera && r.caballos.length > 0
+    );
+
+    return tieneJugadas || tieneResultado || tieneRetirados;
+  };
+
+  const handleEliminarCarrera = (id: string) => {
+    const carrera = carreras.find((c) => c.id === id);
+
+    if (!carrera) {
+      alert("Carrera no encontrada");
+      return;
+    }
+
+    if (tieneDatosAsociadosCarrera(carrera.numeroCarrera)) {
+      alert(
+        `No se puede eliminar la carrera ${carrera.numeroCarrera} porque tiene datos asociados.`
+      );
+      return;
+    }
+
+    const confirmar = confirm(
+      `¿Eliminar la carrera ${carrera.numeroCarrera}?`
+    );
+
+    if (confirmar) {
+      eliminarCarrera(id);
+    }
+  };
+
+  const handleEliminarTodasCarreras = () => {
+    if (carreras.length === 0) return;
+
+    const carrerasConDatos = carreras.filter((c) =>
+      tieneDatosAsociadosCarrera(c.numeroCarrera)
+    );
+
+    if (carrerasConDatos.length > 0) {
+      const numeros = carrerasConDatos
+        .map((c) => c.numeroCarrera)
+        .join(", ");
+
+      alert(
+        `No se pueden eliminar todas las carreras. Estas carreras tienen datos asociados: ${numeros}.`
+      );
+
+      return;
+    }
+
+    const confirmar = confirm(
+      "¿Eliminar todas las carreras válidas de esta jornada?"
+    );
+
+    if (confirmar) {
+      eliminarTodasCarreras();
+    }
+  };
+
   if (!jornada) {
     return (
       <div className="card">
@@ -204,7 +281,8 @@ export const Configuracion = () => {
           <CarrerasPanel
             carreras={carreras}
             onAdd={agregarCarrera}
-            onDelete={eliminarCarrera}
+            onDelete={handleEliminarCarrera}
+            onDeleteAll={handleEliminarTodasCarreras}
           />
         </div>
 
