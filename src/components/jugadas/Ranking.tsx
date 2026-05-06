@@ -11,21 +11,25 @@ export const Ranking = ({ jugadas, resultado }: Props) => {
     return <p>No hay resultados cargados</p>;
   }
 
-  const ranking = jugadas
-    .map((j) => ({
-      nombre: j.nombre,
-      puntos: calcularPuntaje(j, resultado),
+  const ranking = [...jugadas]
+    .map((jugada) => ({
+      nombre: jugada.nombre,
+      puntos: calcularPuntaje(jugada, resultado),
     }))
     .sort((a, b) => b.puntos - a.puntos);
+
+  if (ranking.length === 0) {
+    return <p>No hay jugadas cargadas.</p>;
+  }
 
   return (
     <div>
       <h2>Ranking</h2>
 
       <ol>
-        {ranking.map((r, index) => (
-          <li key={index}>
-            {r.nombre} → <strong>{r.puntos} pts</strong>
+        {ranking.map((item, index) => (
+          <li key={`${item.nombre}-${index}`}>
+            {item.nombre} → <strong>{item.puntos} puntos</strong>
           </li>
         ))}
       </ol>

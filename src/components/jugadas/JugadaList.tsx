@@ -1,22 +1,29 @@
-import type { Jugada, Resultado } from "../../domain/types";
-import { calcularPuntaje } from "../../domain/scoring";
-import { calcularDetalle } from "../../domain/scoring";
+import { Fragment } from "react";
+import type { CarreraValida, Jugada, Resultado } from "../../domain/types";
+import { calcularDetalleDinamico } from "../../domain/scoring";
 
 type Props = {
   jugadas: Jugada[];
+  carreras: CarreraValida[];
   resultado: Resultado | null;
   onEdit: (jugada: Jugada) => void;
   onDelete: (id: string) => void;
 };
 
-export const JugadaList = ({ jugadas, resultado, onEdit, onDelete }: Props) => {
+export const JugadaList = ({
+  jugadas,
+  carreras,
+  resultado,
+  onEdit,
+  onDelete,
+}: Props) => {
   if (jugadas.length === 0) {
     return <p>No hay jugadas cargadas.</p>;
   }
 
   const jugadasOrdenadas = [...jugadas].sort((a, b) => {
-    const puntosA = resultado ? calcularPuntaje(a, resultado) : 0;
-    const puntosB = resultado ? calcularPuntaje(b, resultado) : 0;
+    const puntosA = resultado ? calcularDetalleDinamico(a, resultado).total : 0;
+    const puntosB = resultado ? calcularDetalleDinamico(b, resultado).total : 0;
 
     return puntosB - puntosA;
   });
@@ -26,12 +33,14 @@ export const JugadaList = ({ jugadas, resultado, onEdit, onDelete }: Props) => {
       <thead>
         <tr>
           <th>Jugador</th>
-          <th>C1</th>
-          <th>P1</th>
-          <th>C2</th>
-          <th>P2</th>
-          <th>C3</th>
-          <th>P3</th>
+
+          {carreras.map((carrera) => (
+            <Fragment key={carrera.id}>
+              <th>C{carrera.numeroCarrera}</th>
+              <th>P{carrera.numeroCarrera}</th>
+            </Fragment>
+          ))}
+
           <th>Total</th>
           <th>Acciones</th>
         </tr>
@@ -39,22 +48,44 @@ export const JugadaList = ({ jugadas, resultado, onEdit, onDelete }: Props) => {
 
       <tbody>
         {jugadasOrdenadas.map((j) => {
-          const detalle = resultado ? calcularDetalle(j, resultado) : null;
+          const detalle = resultado
+            ? calcularDetalleDinamico(j, resultado)
+            : null;
 
           return (
             <tr key={j.id}>
-              <td><strong>{j.nombre}</strong></td>
+              <td>
+                <strong>{j.nombre}</strong>
 
-              <td>{j.jugadas.carrera1}</td>
-              <td className="points-cell">{detalle ? detalle.carrera1 : "-"}</td>
+                {j.cambiosAutomaticos &&
+                  j.cambiosAutomaticos.length > 0 && (
+                    <div className="auto-change-list">
+                      {j.cambiosAutomaticos.map((cambio, index) => (
+                        <div key={index} className="auto-change">
+                          ⚠️ {cambio}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+              </td>
 
-              <td>{j.jugadas.carrera2}</td>
-              <td className="points-cell">{detalle ? detalle.carrera2 : "-"}</td>
+              {carreras.map((carrera) => {
+                const numeroCarrera = carrera.numeroCarrera;
 
-              <td>{j.jugadas.carrera3}</td>
-              <td className="points-cell">{detalle ? detalle.carrera3 : "-"}</td>
+                return (
+                  <Fragment key={`${j.id}-${numeroCarrera}`}>
+                    <td>{j.jugadas[numeroCarrera] ?? "-"}</td>
 
-              <td className="total-cell">{detalle ? detalle.total : "-"}</td>
+                    <td className="points-cell">
+                      {detalle ? detalle.puntosPorCarrera[numeroCarrera] ?? 0 : "-"}
+                    </td>
+                  </Fragment>
+                );
+              })}
+
+              <td className="total-cell">
+                {detalle ? detalle.total : "-"}
+              </td>
 
               <td className="actions-cell">
                 <button

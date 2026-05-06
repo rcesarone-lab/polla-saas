@@ -9,16 +9,18 @@ h1, h2 {
 }
 
 input {
-  padding: 0.5rem;
   margin: 0.25rem;
 }
 
 button {
-  padding: 0.5rem 1rem;
+  height: 34px;
+  padding: 0.25rem 0.75rem;
+  margin-right: 10px;
   background: #2563eb;
   color: white;
   border: none;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
 button:hover {
@@ -69,13 +71,6 @@ button:hover {
   border-collapse: collapse;
 }
 
-.table th,
-.table td {
-  padding: 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
-  text-align: left;
-}
-
 .table th {
   background: #f8fafc;
 }
@@ -95,23 +90,8 @@ button:hover {
   align-items: end;
 }
 
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.form-field label {
-  font-size: 0.85rem;
-  font-weight: bold;
-}
-
 .form-field input {
   margin: 0;
-}
-
-button {
-  margin-right: 10px;
 }
 
 .points-cell {
@@ -134,10 +114,167 @@ button {
   gap: 0.5rem;
 }
 
+.button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .secondary-button {
   background: #475569;
 }
 
 .secondary-button:hover {
   background: #334155;
+}
+
+.regla-box {
+  font-weight: bold;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 0.75fr 1fr 0.9fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.config-card {
+  background: white;
+  padding: 0.75rem;
+  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.config-card h2 {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.05rem;
+}
+
+.compact-form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.compact-fields-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.compact-fields-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.form-field label {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+input,
+select {
+  height: 32px;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.85rem;
+}
+
+.compact-summary {
+  margin-top: 0.6rem;
+  padding: 0.5rem;
+  background: #eef2ff;
+  border-radius: 6px;
+  font-weight: bold;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+}
+
+.table th,
+.table td {
+  padding: 0.35rem;
+  font-size: 0.8rem;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.score-fields {
+  display: grid;
+  grid-template-columns: repeat(3, 70px);
+  gap: 0.5rem;
+}
+
+.score-summary-grid {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.score-badge {
+  background: #1e293b;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+
+.score-edit-title {
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  color: #475569;
+}
+
+.score-fields input {
+  height: 28px;
+}
+
+.actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
+.danger-button.small {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.auto-change-list {
+  margin-top: 0.35rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.auto-change {
+  font-size: 0.75rem;
+  color: #92400e;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.dynamic-races-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.5rem;
 }

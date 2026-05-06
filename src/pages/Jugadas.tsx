@@ -1,29 +1,34 @@
+import { useState } from "react";
 import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
+import { useJornada } from "../hooks/useJornada";
+import { useCarreras } from "../hooks/useCarreras";
+import { useRetirados } from "../hooks/useRetirados";
 import type { Jugada } from "../domain/types";
+import { validarCaballoJugada, JugadaValidationError, } from "../domain/normalizarJugada";
 import { JugadaForm } from "../components/jugadas/JugadaForm";
 import { JugadaList } from "../components/jugadas/JugadaList";
 import { Ranking } from "../components/jugadas/Ranking";
-import { useJornada } from "../hooks/useJornada";
 import { JornadaSelector } from "../components/jornada/JornadaSelector";
-import { useState } from "react";
 
 export const Jugadas = () => {
   const { jugadas, addJugada, updateJugada, deleteJugada } = useJugadas();
   const { jornada, jornadas, changeJornada, addJornada } = useJornada();
   const { resultado } = useResultados(jornada?.id);
-  const [jugadaEditando, setJugadaEditando] = useState<Jugada | null>(null);
+  const { carreras } = useCarreras(jornada?.id);
+  const { retirados } = useRetirados(jornada?.id);
 
-  if (!jornada) {
-    return <p>Cargando jornada...</p>;
-  }
+  const [jugadaEditando, setJugadaEditando] = useState<Jugada | null>(null);
 
   const handleSubmitJugada = (data: {
     nombre: string;
-    carrera1: number;
-    carrera2: number;
-    carrera3: number;
-  }) => {
+    jugadas: Record<number, number>;
+  }): { success: boolean; errorCarrera?: number } => {
+    if (!jornada) {
+      alert("Primero debes crear o seleccionar una jornada");
+      return { success: false };
+    }
+
     const existeNombre = jugadas.some(
       (j) =>
         j.jornadaId === jornada.id &&
@@ -33,47 +38,67 @@ export const Jugadas = () => {
 
     if (existeNombre) {
       alert("Ya existe una jugada con ese nombre en esta jornada");
-      return;
+      return { success: false };
     }
 
-    if (jugadaEditando) {
-      const jugadaActualizada: Jugada = {
-        ...jugadaEditando,
+    try {
+      const jugadasValidadas: Record<number, number> = {};
+
+      for (const carrera of carreras) {
+        const caballo = data.jugadas[carrera.numeroCarrera];
+
+        jugadasValidadas[carrera.numeroCarrera] =
+          validarCaballoJugada(
+            caballo,
+            carrera.numeroCarrera as 1 | 2 | 3,
+            carreras,
+            retirados
+          );
+      }
+
+      if (jugadaEditando) {
+        updateJugada({
+          ...jugadaEditando,
+          nombre: data.nombre.trim(),
+          jugadas: jugadasValidadas,
+        });
+
+        setJugadaEditando(null);
+
+        return { success: true };
+      }
+
+      addJugada({
+        id: Date.now().toString(),
+        jornadaId: jornada.id,
         nombre: data.nombre.trim(),
-        jugadas: {
-          carrera1: data.carrera1,
-          carrera2: data.carrera2,
-          carrera3: data.carrera3,
-        },
-      };
+        jugadas: jugadasValidadas,
+        fecha: new Date().toISOString(),
+      });
 
-      updateJugada(jugadaActualizada);
-      setJugadaEditando(null);
-      return;
+      return { success: true };
+    } catch (error) {
+      if (error instanceof JugadaValidationError) {
+        alert(error.message);
+
+        return {
+          success: false,
+          errorCarrera: error.carrera,
+        };
+      }
+
+      alert("Error al validar jugada");
+
+      return { success: false };
     }
-
-    const nuevaJugada: Jugada = {
-      id: Date.now().toString(),
-      jornadaId: jornada.id,
-      nombre: data.nombre.trim(),
-      jugadas: {
-        carrera1: data.carrera1,
-        carrera2: data.carrera2,
-        carrera3: data.carrera3,
-      },
-      fecha: new Date().toISOString(),
-    };
-
-    addJugada(nuevaJugada);
   };
 
-  const jugadasDeLaJornada = jugadas.filter(
-    (j) => j.jornadaId === jornada.id
-  );
+  const jugadasDeLaJornada = jornada
+    ? jugadas.filter((j) => j.jornadaId === jornada.id)
+    : [];
 
   return (
     <div className="grid">
-
       <JornadaSelector
         jornadas={jornadas}
         jornadaActual={jornada}
@@ -83,21 +108,49 @@ export const Jugadas = () => {
 
       <h1>Jugadas</h1>
 
-      <p>
-        Jornada: {jornada.nombre} - {jornada.fecha}
-      </p>
+      {!jornada ? (
+        <div
+          className="card"
+          style={{ background: "#fff7ed", color: "#9a3412" }}
+        >
+          <strong>No hay jornada seleccionada.</strong>
+
+          <p>
+            Debes crear o seleccionar una jornada antes de guardar jugadas.
+          </p>
+        </div>
+      ) : (
+        <p>
+          Jornada: {jornada.nombre} - {jornada.fecha}
+        </p>
+      )}
 
       <div className="card">
-        <JugadaForm
-          jugadaEditando={jugadaEditando}
-          onSubmit={handleSubmitJugada}
-          onCancelEdit={() => setJugadaEditando(null)}
-        />
+        {!jornada ? (
+          <p>Primero debes crear o seleccionar una jornada.</p>
+        ) : carreras.length === 0 ? (
+          <div>
+            <h2>No hay carreras válidas configuradas</h2>
+
+            <p>
+              Antes de cargar jugadas, debes ir a Configuración y cargar las
+              carreras válidas de esta jornada.
+            </p>
+          </div>
+        ) : (
+          <JugadaForm
+            jugadaEditando={jugadaEditando}
+            carreras={carreras}
+            onSubmit={handleSubmitJugada}
+            onCancelEdit={() => setJugadaEditando(null)}
+          />
+        )}
       </div>
 
       <div className="card">
         <JugadaList
           jugadas={jugadasDeLaJornada}
+          carreras={carreras}
           resultado={resultado}
           onEdit={setJugadaEditando}
           onDelete={deleteJugada}
@@ -105,7 +158,10 @@ export const Jugadas = () => {
       </div>
 
       <div className="card">
-        <Ranking jugadas={jugadasDeLaJornada} resultado={resultado} />
+        <Ranking
+          jugadas={jugadasDeLaJornada}
+          resultado={resultado}
+        />
       </div>
     </div>
   );

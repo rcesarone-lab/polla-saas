@@ -5,14 +5,15 @@ type Props = {
   children: ReactNode;
 };
 
-const SIDEBAR_WIDTH = 160;
+const SIDEBAR_WIDTH = 135;
 
 export const Layout = ({ children }: Props) => {
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <aside
         style={{
-          width: "160px",
+          width: `${SIDEBAR_WIDTH}px`,
+          boxSizing: "border-box",
           background: "#1e293b",
           color: "white",
           padding: "1rem",
@@ -28,37 +29,32 @@ export const Layout = ({ children }: Props) => {
           <Link style={{ color: "white", textDecoration: "none" }} to="/">
             Panel
           </Link>
-
           <Link style={{ color: "white", textDecoration: "none" }} to="/jugadas">
             Jugadas
           </Link>
-
           <Link style={{ color: "white", textDecoration: "none" }} to="/resultados">
             Resultados
           </Link>
-
           <Link style={{ color: "white", textDecoration: "none" }} to="/historico">
             Histórico
+          </Link>
+          <Link style={{ color: "white", textDecoration: "none" }} to="/configuracion">
+            Configuración
           </Link>
         </nav>
       </aside>
 
       <main
         style={{
-          marginLeft: "160px",
-          padding: "2rem 3rem", // más aire horizontal
+          marginLeft: `${SIDEBAR_WIDTH}px`,
+          padding: "1rem",
           minHeight: "100vh",
           background: "#f3f4f6",
+          width: `calc(100% - ${SIDEBAR_WIDTH}px)`,
+          boxSizing: "border-box",
         }}
       >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-          }}
-        >
-          {children}
-        </div>
+        {children}
       </main>
     </div>
   );

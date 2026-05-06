@@ -9,7 +9,13 @@ export const Dashboard = () => {
   const { resultado } = useResultados(jornada?.id);
 
   if (!jornada) {
-    return <p>Cargando...</p>;
+    return (
+      <div className="card">
+        <h1>Panel</h1>
+        <p>No hay una jornada creada.</p>
+        <p>Ve a Jugadas o Configuración y crea una jornada para comenzar.</p>
+      </div>
+    );
   }
 
   const jugadasDeLaJornada = jugadas.filter(
@@ -18,31 +24,30 @@ export const Dashboard = () => {
 
   const ranking = resultado
     ? jugadasDeLaJornada
-      .map((j) => ({
-        nombre: j.nombre,
-        puntos: calcularPuntaje(j, resultado),
-      }))
-      .sort((a, b) => b.puntos - a.puntos)
-      .slice(0, 3)
+        .map((j) => ({
+          nombre: j.nombre,
+          puntos: calcularPuntaje(j, resultado),
+        }))
+        .sort((a, b) => b.puntos - a.puntos)
     : [];
 
   const ganador = ranking.length > 0 ? ranking[0] : null;
 
   return (
     <div>
-      <h1>Dashboard</h1>
+      <h1>Panel</h1>
 
       <div className="dashboard-grid">
         <div className="card">
           <h2>Jornada actual</h2>
-          <p>{jornada.nombre} - {jornada.fecha}</p>
+          <p>
+            {jornada.nombre} - {jornada.fecha}
+          </p>
         </div>
 
         <div className="card">
-          <h2>Total jugadas</h2>
-          <p style={{ fontSize: "2rem", fontWeight: "bold" }}>
-            {jugadasDeLaJornada.length}
-          </p>
+          <h2>Total de jugadas</h2>
+          <p>{jugadasDeLaJornada.length}</p>
         </div>
 
         <div className="card">
@@ -54,31 +59,30 @@ export const Dashboard = () => {
 
         <div className="card">
           <h2>Ganador</h2>
-
           {!ganador ? (
             <p>No disponible</p>
           ) : (
-            <p style={{ fontSize: "1.5rem", fontWeight: "bold", color: "green" }}>
+            <p>
               {ganador.nombre} → {ganador.puntos} pts
             </p>
           )}
         </div>
 
         <div className="card">
-          <h2>Top 3</h2>
+          <h2>Los 3 mejores</h2>
+
           {ranking.length === 0 ? (
             <p>No disponible</p>
           ) : (
             <ol>
-              {ranking.map((r, i) => (
-                <li key={i}>
-                  {r.nombre} → {r.puntos} pts
+              {ranking.slice(0, 3).map((r, i) => (
+                <li key={`${r.nombre}-${i}`}>
+                  {r.nombre} → {r.puntos} puntos
                 </li>
               ))}
             </ol>
           )}
         </div>
-
       </div>
     </div>
   );

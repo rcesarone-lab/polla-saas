@@ -2,31 +2,9 @@ export type Jugada = {
   id: string;
   jornadaId: string;
   nombre: string;
-  jugadas: {
-    carrera1: number;
-    carrera2: number;
-    carrera3: number;
-  };
+  jugadas: Record<number, number>;
   fecha: string;
-};
-
-export type Resultado = {
-  jornadaId: string;
-  carrera1: {
-    primero: number;
-    segundo: number;
-    tercero: number;
-  };
-  carrera2: {
-    primero: number;
-    segundo: number;
-    tercero: number;
-  };
-  carrera3: {
-    primero: number;
-    segundo: number;
-    tercero: number;
-  };
+  cambiosAutomaticos?: string[];
 };
 
 export type PosicionResultado = {
@@ -37,7 +15,25 @@ export type PosicionResultado = {
 
 export type Resultado = {
   jornadaId: string;
-  carrera1: PosicionResultado;
-  carrera2: PosicionResultado;
-  carrera3: PosicionResultado;
+  resultados: Record<number, PosicionResultado>;
+};
+
+export type ConfiguracionPuntos = {
+  primerLugar: number;
+  segundoLugar: number;
+  tercerLugar: number;
+};
+
+export type CarreraValida = {
+  id: string;
+  jornadaId: string;
+  numeroCarrera: number;
+  cantidadEjemplares: number;
+};
+
+export type Retirado = {
+  id: string;
+  jornadaId: string;
+  carrera: number;
+  caballos: number[];
 };
