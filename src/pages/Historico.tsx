@@ -2,6 +2,12 @@ import { useJornada } from "../hooks/useJornada";
 import { useJugadas } from "../hooks/useJugadas";
 import { calcularPuntaje } from "../domain/scoring";
 import { getResultadoByJornada } from "../services/resultados.service";
+import { getCarrerasByJornada } from "../services/carreras.service";
+import {
+  calcularEstadoJornada,
+  getEstadoJornadaClass,
+  getEstadoJornadaLabel,
+} from "../domain/jornadaStatus";
 
 export const Historico = () => {
   const { jornadas, changeJornada } = useJornada();
@@ -36,13 +42,17 @@ export const Historico = () => {
 
                 const resultado = getResultadoByJornada(jornada.id);
 
+                const carrerasDeLaJornada = getCarrerasByJornada(jornada.id);
+
+                const estadoJornada = calcularEstadoJornada(carrerasDeLaJornada, resultado);
+
                 const ranking = resultado
                   ? jugadasDeLaJornada
-                      .map((jugada) => ({
-                        nombre: jugada.nombre,
-                        puntos: calcularPuntaje(jugada, resultado),
-                      }))
-                      .sort((a, b) => b.puntos - a.puntos)
+                    .map((jugada) => ({
+                      nombre: jugada.nombre,
+                      puntos: calcularPuntaje(jugada, resultado),
+                    }))
+                    .sort((a, b) => b.puntos - a.puntos)
                   : [];
 
                 const ganador = ranking.length > 0 ? ranking[0] : null;
@@ -54,11 +64,9 @@ export const Historico = () => {
                     <td>{jugadasDeLaJornada.length}</td>
 
                     <td>
-                      {resultado ? (
-                        <span className="status-ok">Resultados cargados</span>
-                      ) : (
-                        <span className="status-warn">Sin resultados</span>
-                      )}
+                      <span className={getEstadoJornadaClass(estadoJornada)}>
+                        {getEstadoJornadaLabel(estadoJornada)}
+                      </span>
                     </td>
 
                     <td>{ganador ? ganador.nombre : "-"}</td>

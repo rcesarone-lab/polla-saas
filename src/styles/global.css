@@ -278,3 +278,7 @@ h1 {
   grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
   gap: 0.5rem;
 }
+
+.status-partial {
+  color: #2563eb;
+}

@@ -2,11 +2,18 @@ import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
 import { useJornada } from "../hooks/useJornada";
 import { calcularPuntaje } from "../domain/scoring";
+import { useCarreras } from "../hooks/useCarreras";
+import {
+  calcularEstadoJornada,
+  getEstadoJornadaClass,
+  getEstadoJornadaLabel,
+} from "../domain/jornadaStatus";
 
 export const Dashboard = () => {
   const { jugadas } = useJugadas();
   const { jornada } = useJornada();
   const { resultado } = useResultados(jornada?.id);
+  const { carreras } = useCarreras(jornada?.id);
 
   if (!jornada) {
     return (
@@ -22,13 +29,15 @@ export const Dashboard = () => {
     (j) => j.jornadaId === jornada.id
   );
 
+  const estadoJornada = calcularEstadoJornada(carreras, resultado);
+
   const ranking = resultado
     ? jugadasDeLaJornada
-        .map((j) => ({
-          nombre: j.nombre,
-          puntos: calcularPuntaje(j, resultado),
-        }))
-        .sort((a, b) => b.puntos - a.puntos)
+      .map((j) => ({
+        nombre: j.nombre,
+        puntos: calcularPuntaje(j, resultado),
+      }))
+      .sort((a, b) => b.puntos - a.puntos)
     : [];
 
   const ganador = ranking.length > 0 ? ranking[0] : null;
@@ -52,8 +61,8 @@ export const Dashboard = () => {
 
         <div className="card">
           <h2>Estado</h2>
-          <p className={resultado ? "status-ok" : "status-warn"}>
-            {resultado ? "Resultados cargados" : "Sin resultados"}
+          <p className={getEstadoJornadaClass(estadoJornada)}>
+            {getEstadoJornadaLabel(estadoJornada)}
           </p>
         </div>
 
