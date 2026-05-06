@@ -5,6 +5,7 @@ import { calcularPuntaje } from "../domain/scoring";
 import { useCarreras } from "../hooks/useCarreras";
 import {
   calcularEstadoJornada,
+  calcularProgresoJornada,
   getEstadoJornadaClass,
   getEstadoJornadaLabel,
 } from "../domain/jornadaStatus";
@@ -30,6 +31,8 @@ export const Dashboard = () => {
   );
 
   const estadoJornada = calcularEstadoJornada(carreras, resultado);
+
+  const progresoJornada = calcularProgresoJornada(carreras, resultado);
 
   const ranking = resultado
     ? jugadasDeLaJornada
@@ -57,6 +60,14 @@ export const Dashboard = () => {
         <div className="card">
           <h2>Total de jugadas</h2>
           <p>{jugadasDeLaJornada.length}</p>
+        </div>
+
+        <div className="card">
+          <h2>Progreso</h2>
+          <p>
+            {progresoJornada.completadas} / {progresoJornada.total} carreras
+          </p>
+          <p>{progresoJornada.porcentaje}% completado</p>
         </div>
 
         <div className="card">

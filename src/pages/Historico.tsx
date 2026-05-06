@@ -5,6 +5,7 @@ import { getResultadoByJornada } from "../services/resultados.service";
 import { getCarrerasByJornada } from "../services/carreras.service";
 import {
   calcularEstadoJornada,
+  calcularProgresoJornada,
   getEstadoJornadaClass,
   getEstadoJornadaLabel,
 } from "../domain/jornadaStatus";
@@ -27,6 +28,7 @@ export const Historico = () => {
                 <th>Fecha</th>
                 <th>Nombre</th>
                 <th>Total jugadas</th>
+                <th>Progreso</th>
                 <th>Estado</th>
                 <th>Ganador</th>
                 <th>Puntos</th>
@@ -46,6 +48,8 @@ export const Historico = () => {
 
                 const estadoJornada = calcularEstadoJornada(carrerasDeLaJornada, resultado);
 
+                const progresoJornada = calcularProgresoJornada(carrerasDeLaJornada, resultado);
+
                 const ranking = resultado
                   ? jugadasDeLaJornada
                     .map((jugada) => ({
@@ -62,6 +66,11 @@ export const Historico = () => {
                     <td>{jornada.fecha}</td>
                     <td>{jornada.nombre}</td>
                     <td>{jugadasDeLaJornada.length}</td>
+
+                    <td>
+                      {progresoJornada.completadas}/{progresoJornada.total} (
+                      {progresoJornada.porcentaje}%)
+                    </td>
 
                     <td>
                       <span className={getEstadoJornadaClass(estadoJornada)}>
