@@ -10,6 +10,7 @@ import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
 import { obtenerSiguienteDisponible } from "../domain/reasignarCaballo";
 import { getRetiradosByJornada } from "../services/retirados.service";
+import { registrarAuditoria } from "../services/auditoria.service";
 
 export const Configuracion = () => {
   const { configuracion, updateConfiguracion, deleteConfiguracion } =
@@ -66,6 +67,13 @@ export const Configuracion = () => {
 
     updateConfiguracion(nuevaConfig);
 
+    registrarAuditoria({
+      jornadaId: jornada?.id,
+      accion: "GUARDAR_REGLA",
+      descripcion: `Regla guardada: 1° ${p1} pts, 2° ${p2} pts, 3° ${p3} pts.`,
+      severidad: "INFO",
+    });
+
     setPrimerLugar("");
     setSegundoLugar("");
     setTercerLugar("");
@@ -86,6 +94,13 @@ export const Configuracion = () => {
 
     deleteConfiguracion();
 
+    registrarAuditoria({
+      jornadaId: jornada?.id,
+      accion: "ELIMINAR_REGLA",
+      descripcion: "Se eliminó la regla de puntuación vigente.",
+      severidad: "WARNING",
+    });
+
     setPrimerLugar("");
     setSegundoLugar("");
     setTercerLugar("");
@@ -96,6 +111,13 @@ export const Configuracion = () => {
 
     try {
       agregarRetirado(carrera, caballo);
+
+      registrarAuditoria({
+        jornadaId: jornada.id,
+        accion: "AGREGAR_RETIRADO",
+        descripcion: `Se agregó el caballo ${caballo} como retirado en la carrera ${carrera}.`,
+        severidad: "WARNING",
+      });
 
       const retiradosActualizados = getRetiradosByJornada(jornada.id);
 
@@ -112,6 +134,13 @@ export const Configuracion = () => {
           );
 
           const mensajeCambio = `Carrera ${carrera}: ${caballo} → ${nuevoCaballo} por retirado`;
+
+          registrarAuditoria({
+            jornadaId: jornada.id,
+            accion: "REASIGNAR_JUGADA",
+            descripcion: `${jugada.nombre}: ${mensajeCambio}.`,
+            severidad: "WARNING",
+          });
 
           updateJugada({
             ...jugada,

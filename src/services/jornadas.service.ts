@@ -1,5 +1,6 @@
 import type { Jornada } from "../domain/types";
 import { storage } from "../api/storage";
+import { registrarAuditoria } from "./auditoria.service";
 
 const KEY_LIST = "jornadas";
 const KEY_ACTUAL = "jornadaActual";
@@ -45,6 +46,13 @@ export const crearJornada = (fecha: string): Jornada => {
   const nuevas = [...jornadas, nueva];
 
   saveJornadas(nuevas);
+
+  registrarAuditoria({
+    jornadaId,
+    accion: "FINALIZAR_JORNADA",
+    descripcion: "La jornada fue finalizada y se generó snapshot histórico.",
+    severidad: "CRITICAL",
+  });
 
   return nueva;
 };
@@ -102,6 +110,13 @@ export const reabrirJornada = (jornadaId: string) => {
   );
 
   saveJornadas(nuevas);
+
+  registrarAuditoria({
+    jornadaId,
+    accion: "REABRIR_JORNADA",
+    descripcion: "La jornada fue reabierta para permitir nuevas modificaciones.",
+    severidad: "WARNING",
+  });
 
   const actual = getJornadaActual();
 

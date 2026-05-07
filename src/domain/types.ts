@@ -56,3 +56,13 @@ export type Retirado = {
   carrera: number;
   caballos: number[];
 };
+
+export type AuditoriaEvento = {
+  id: string;
+  jornadaId?: string;
+  fecha: string;
+  accion: string;
+  descripcion: string;
+  severidad: "INFO" | "WARNING" | "CRITICAL";
+};
+
