@@ -162,15 +162,20 @@ export const Jugadas = () => {
           jugadas={jugadasDeLaJornada}
           carreras={carreras}
           resultado={resultado}
-          onEdit={(jugada) => {
-            if (jornadaFinalizada) {
-              alert("La jornada está finalizada. No se pueden editar jugadas.");
-              return;
-            }
-
-            setJugadaEditando(jugada);
-          }}
-          onDelete={deleteJugada}
+          onEdit={
+            jornadaFinalizada
+              ? undefined
+              : (jugada) => {
+                setJugadaEditando(jugada);
+              }
+          }
+          onDelete={
+            jornadaFinalizada
+              ? undefined
+              : (id) => {
+                deleteJugada(id);
+              }
+          }
         />
       </div>
 

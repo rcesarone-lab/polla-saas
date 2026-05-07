@@ -5,8 +5,8 @@ type Props = {
   retirados: Retirado[];
   carreras: CarreraValida[];
   disabled?: boolean;
-  onAdd: (carrera: number, caballo: number) => void;
-  onDelete: (carrera: number, caballo: number) => void;
+  onAdd?: (carrera: number, caballo: number) => void;
+  onDelete?: (carrera: number, caballo: number) => void;
 };
 
 export const RetiradosPanel = ({
@@ -20,10 +20,7 @@ export const RetiradosPanel = ({
   const [caballo, setCaballo] = useState("");
 
   const handleAdd = () => {
-    if (disabled) {
-      alert("La jornada está finalizada. No se pueden modificar retirados.");
-      return;
-    }
+    if (!onAdd) return;
 
     const nroCarrera = Number(carrera);
     const nroCaballo = Number(caballo);
@@ -38,21 +35,8 @@ export const RetiradosPanel = ({
       return;
     }
 
-    const carreraInfo = carreras.find((c) => c.numeroCarrera === nroCarrera);
-
-    if (!carreraInfo) {
-      alert("La carrera seleccionada no existe");
-      return;
-    }
-
-    if (nroCaballo > carreraInfo.cantidadEjemplares) {
-      alert(
-        `El caballo ${nroCaballo} está fuera de rango. Carrera ${nroCarrera} permite 1-${carreraInfo.cantidadEjemplares}`
-      );
-      return;
-    }
-
     onAdd(nroCarrera, nroCaballo);
+
     setCaballo("");
   };
 
@@ -66,87 +50,82 @@ export const RetiradosPanel = ({
         </p>
       )}
 
-      {carreras.length === 0 ? (
-        <p>No hay carreras válidas configuradas.</p>
-      ) : (
-        <>
-          <div className="compact-form">
-            <div className="compact-fields-2">
-              <div className="form-field">
-                <label>Carrera</label>
-                <select
-                  disabled={disabled}
-                  value={carrera}
-                  onChange={(e) => setCarrera(e.target.value)}
-                >
-                  <option value="">Seleccione</option>
+      {!disabled && onAdd && (
+        <div className="compact-form">
+          <div className="compact-fields-2">
+            <div className="form-field">
+              <label>Carrera</label>
 
-                  {carreras.map((c) => (
-                    <option key={c.id} value={c.numeroCarrera}>
-                      Carrera {c.numeroCarrera}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={carrera}
+                onChange={(e) => setCarrera(e.target.value)}
+              >
+                <option value="">Seleccione</option>
 
-              <div className="form-field">
-                <label>Caballo</label>
-                <input
-                  type="number"
-                  disabled={disabled}
-                  value={caballo}
-                  onChange={(e) => setCaballo(e.target.value)}
-                  placeholder="Nro"
-                />
-              </div>
+                {carreras.map((c) => (
+                  <option key={c.id} value={c.numeroCarrera}>
+                    Carrera {c.numeroCarrera}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {!disabled && (
-              <button type="button" onClick={handleAdd}>
-                Agregar
-              </button>
-            )}
+            <div className="form-field">
+              <label>Caballo</label>
+
+              <input
+                type="number"
+                value={caballo}
+                onChange={(e) => setCaballo(e.target.value)}
+                placeholder="Nro"
+              />
+            </div>
           </div>
 
-          {retirados.length === 0 ? (
-            <p>No hay retirados cargados.</p>
-          ) : (
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Carrera</th>
-                  <th>Retirados</th>
-                </tr>
-              </thead>
+          <button type="button" onClick={handleAdd}>
+            Agregar
+          </button>
+        </div>
+      )}
 
-              <tbody>
-                {retirados.map((r) => (
-                  <tr key={r.id}>
-                    <td>Carrera {r.carrera}</td>
-                    <td>
-                      {r.caballos.map((caballo) =>
-                        !disabled ? (
-                          <button
-                            key={caballo}
-                            type="button"
-                            className="secondary-button"
-                            onClick={() => onDelete(r.carrera, caballo)}
-                          >
-                            {caballo} ✕
-                          </button>
-                        ) : (
-                          <span key={caballo} className="auto-change">
-                            {caballo}
-                          </span>
-                        )
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </>
+      {retirados.length === 0 ? (
+        <p>No hay retirados cargados.</p>
+      ) : (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Carrera</th>
+              <th>Retirados</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {retirados.map((r) => (
+              <tr key={r.id}>
+                <td>Carrera {r.carrera}</td>
+
+                <td>
+                  {r.caballos.map((caballo) =>
+                    onDelete ? (
+                      <button
+                        key={caballo}
+                        type="button"
+                        className="secondary-button"
+                        onClick={() => onDelete(r.carrera, caballo)}
+                      >
+                        {caballo} ✕
+                      </button>
+                    ) : (
+                      <span key={caballo} className="auto-change">
+                        {caballo}
+                      </span>
+                    )
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );

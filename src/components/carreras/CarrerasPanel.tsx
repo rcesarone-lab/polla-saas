@@ -4,9 +4,9 @@ import type { CarreraValida } from "../../domain/types";
 type Props = {
   carreras: CarreraValida[];
   disabled?: boolean;
-  onAdd: (numeroCarrera: number, cantidadEjemplares: number) => void;
-  onDelete: (id: string) => void;
-  onDeleteAll: () => void;
+  onAdd?: (numeroCarrera: number, cantidadEjemplares: number) => void;
+  onDelete?: (id: string) => void;
+  onDeleteAll?: () => void;
 };
 
 export const CarrerasPanel = ({
@@ -20,10 +20,7 @@ export const CarrerasPanel = ({
   const [cantidadEjemplares, setCantidadEjemplares] = useState("");
 
   const handleAdd = () => {
-    if (disabled) {
-      alert("La jornada está finalizada. No se pueden modificar carreras.");
-      return;
-    }
+    if (!onAdd) return;
 
     const numero = Number(numeroCarrera);
     const cantidad = Number(cantidadEjemplares);
@@ -54,38 +51,36 @@ export const CarrerasPanel = ({
         </p>
       )}
 
-      <div className="compact-form">
-        <div className="compact-fields-2">
-          <div className="form-field">
-            <label>Nro. carrera</label>
-            <input
-              type="number"
-              disabled={disabled}
-              placeholder="Ej: 7"
-              value={numeroCarrera}
-              onChange={(e) => setNumeroCarrera(e.target.value)}
-            />
+      {!disabled && onAdd && (
+        <div className="compact-form">
+          <div className="compact-fields-2">
+            <div className="form-field">
+              <label>Nro. carrera</label>
+              <input
+                type="number"
+                placeholder="Ej: 7"
+                value={numeroCarrera}
+                onChange={(e) => setNumeroCarrera(e.target.value)}
+              />
+            </div>
+
+            <div className="form-field">
+              <label>Ejemplares</label>
+              <input
+                type="number"
+                placeholder="Ej: 14"
+                value={cantidadEjemplares}
+                onChange={(e) => setCantidadEjemplares(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="form-field">
-            <label>Ejemplares</label>
-            <input
-              type="number"
-              disabled={disabled}
-              placeholder="Ej: 14"
-              value={cantidadEjemplares}
-              onChange={(e) => setCantidadEjemplares(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {!disabled && (
           <div className="actions-row">
             <button type="button" onClick={handleAdd}>
               Agregar
             </button>
 
-            {carreras.length > 0 && (
+            {carreras.length > 0 && onDeleteAll && (
               <button
                 type="button"
                 className="danger-button small"
@@ -95,8 +90,8 @@ export const CarrerasPanel = ({
               </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {carreras.length === 0 ? (
         <p>No hay carreras válidas cargadas.</p>
@@ -106,7 +101,7 @@ export const CarrerasPanel = ({
             <tr>
               <th>Carrera</th>
               <th>Ejemplares</th>
-              <th>Acciones</th>
+              {onDelete && <th>Acciones</th>}
             </tr>
           </thead>
 
@@ -115,8 +110,9 @@ export const CarrerasPanel = ({
               <tr key={c.id}>
                 <td>Carrera {c.numeroCarrera}</td>
                 <td>{c.cantidadEjemplares}</td>
-                <td>
-                  {!disabled ? (
+
+                {onDelete && (
+                  <td>
                     <button
                       type="button"
                       className="danger-button"
@@ -124,10 +120,8 @@ export const CarrerasPanel = ({
                     >
                       Eliminar
                     </button>
-                  ) : (
-                    "-"
-                  )}
-                </td>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

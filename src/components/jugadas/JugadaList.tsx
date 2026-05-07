@@ -1,13 +1,12 @@
-import { Fragment } from "react";
-import type { CarreraValida, Jugada, Resultado } from "../../domain/types";
+import type { Jugada, Resultado, CarreraValida } from "../../domain/types";
 import { calcularDetalleDinamico } from "../../domain/scoring";
 
 type Props = {
   jugadas: Jugada[];
   carreras: CarreraValida[];
   resultado: Resultado | null;
-  onEdit: (jugada: Jugada) => void;
-  onDelete: (id: string) => void;
+  onEdit?: (jugada: Jugada) => void;
+  onDelete?: (id: string) => void;
 };
 
 export const JugadaList = ({
@@ -21,92 +20,80 @@ export const JugadaList = ({
     return <p>No hay jugadas cargadas.</p>;
   }
 
-  const jugadasOrdenadas = [...jugadas].sort((a, b) => {
-    const puntosA = resultado ? calcularDetalleDinamico(a, resultado).total : 0;
-    const puntosB = resultado ? calcularDetalleDinamico(b, resultado).total : 0;
-
-    return puntosB - puntosA;
-  });
-
   return (
     <table className="table">
       <thead>
         <tr>
-          <th>Jugador</th>
+          <th>Nombre</th>
 
-          {carreras.map((carrera) => (
-            <Fragment key={carrera.id}>
-              <th>C{carrera.numeroCarrera}</th>
-              <th>P{carrera.numeroCarrera}</th>
-            </Fragment>
+          {carreras.map((c) => (
+            <th key={c.id}>C{c.numeroCarrera}</th>
           ))}
 
-          <th>Total</th>
-          <th>Acciones</th>
+          {resultado &&
+            carreras.map((c) => (
+              <th key={`p-${c.id}`}>P{c.numeroCarrera}</th>
+            ))}
+
+          {resultado && <th>Total</th>}
+
+          {(onEdit || onDelete) && <th>Acciones</th>}
         </tr>
       </thead>
 
       <tbody>
-        {jugadasOrdenadas.map((j) => {
+        {jugadas.map((jugada) => {
           const detalle = resultado
-            ? calcularDetalleDinamico(j, resultado)
+            ? calcularDetalleDinamico(jugada, resultado)
             : null;
 
           return (
-            <tr key={j.id}>
-              <td>
-                <strong>{j.nombre}</strong>
+            <tr key={jugada.id}>
+              <td>{jugada.nombre}</td>
 
-                {j.cambiosAutomaticos &&
-                  j.cambiosAutomaticos.length > 0 && (
-                    <div className="auto-change-list">
-                      {j.cambiosAutomaticos.map((cambio, index) => (
-                        <div key={index} className="auto-change">
-                          ⚠️ {cambio}
-                        </div>
-                      ))}
-                    </div>
+              {carreras.map((c) => (
+                <td key={`${jugada.id}-${c.id}`}>
+                  {jugada.jugadas[c.numeroCarrera] ?? "-"}
+                </td>
+              ))}
+
+              {resultado &&
+                carreras.map((c) => (
+                  <td
+                    key={`pts-${jugada.id}-${c.id}`}
+                    className="points-cell"
+                  >
+                    {detalle?.puntosPorCarrera[c.numeroCarrera] ?? 0}
+                  </td>
+                ))}
+
+              {resultado && (
+                <td className="total-cell">{detalle?.total ?? 0}</td>
+              )}
+
+              {(onEdit || onDelete) && (
+                <td className="actions-cell">
+                  {onEdit && (
+                    <button
+                      type="button"
+                      className="secondary-button"
+                      onClick={() => onEdit(jugada)}
+                    >
+                      Editar
+                    </button>
                   )}
-              </td>
 
-              {carreras.map((carrera) => {
-                const numeroCarrera = carrera.numeroCarrera;
-
-                return (
-                  <Fragment key={`${j.id}-${numeroCarrera}`}>
-                    <td>{j.jugadas[numeroCarrera] ?? "-"}</td>
-
-                    <td className="points-cell">
-                      {detalle ? detalle.puntosPorCarrera[numeroCarrera] ?? 0 : "-"}
-                    </td>
-                  </Fragment>
-                );
-              })}
-
-              <td className="total-cell">
-                {detalle ? detalle.total : "-"}
-              </td>
-
-              <td className="actions-cell">
-                <button
-                  type="button"
-                  className="secondary-button"
-                  onClick={() => onEdit(j)}
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  className="danger-button"
-                  onClick={() => {
-                    const confirmar = confirm("¿Eliminar esta jugada?");
-                    if (confirmar) onDelete(j.id);
-                  }}
-                >
-                  Eliminar
-                </button>
-              </td>
+                  {onDelete && (
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() => onDelete(jugada.id)}
+                    >
+                      Eliminar
+                    </button>
+                  )}
+                </td>
+              )}
             </tr>
           );
         })}

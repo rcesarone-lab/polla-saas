@@ -58,9 +58,22 @@ export const Dashboard = () => {
       <div className="dashboard-grid">
         <div className="card">
           <h2>Jornada actual</h2>
+
           <p>
             {jornada.nombre} - {jornada.fecha}
           </p>
+
+          {jornada.fechaFinalizacion && (
+            <p className="status-ok">
+              Finalizada: {new Date(jornada.fechaFinalizacion).toLocaleString()}
+            </p>
+          )}
+
+          {(jornada.reaperturas ?? 0) > 0 && (
+            <p className="status-warn">
+              Reaperturas: {jornada.reaperturas}
+            </p>
+          )}
         </div>
 
         <div className="card">
@@ -78,8 +91,8 @@ export const Dashboard = () => {
 
         <div className="card">
           <h2>Estado</h2>
-          <p className={getEstadoJornadaClass(estadoJornada)}>
-            {getEstadoJornadaLabel(estadoJornada)}
+          <p className={getEstadoJornadaClass(estadoJornada, jornada.reaperturas ?? 0)}>
+            {getEstadoJornadaLabel(estadoJornada, jornada.reaperturas ?? 0)}
           </p>
         </div>
 

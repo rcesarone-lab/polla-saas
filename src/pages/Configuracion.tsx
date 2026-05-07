@@ -296,9 +296,21 @@ export const Configuracion = () => {
           <CarrerasPanel
             carreras={carreras}
             disabled={jornadaFinalizada}
-            onAdd={agregarCarrera}
-            onDelete={handleEliminarCarrera}
-            onDeleteAll={handleEliminarTodasCarreras}
+            onAdd={
+              jornadaFinalizada
+                ? undefined
+                : agregarCarrera
+            }
+            onDelete={
+              jornadaFinalizada
+                ? undefined
+                : handleEliminarCarrera
+            }
+            onDeleteAll={
+              jornadaFinalizada
+                ? undefined
+                : handleEliminarTodasCarreras
+            }
           />
         </div>
 
@@ -307,8 +319,16 @@ export const Configuracion = () => {
             retirados={retirados}
             carreras={carreras}
             disabled={jornadaFinalizada}
-            onAdd={handleAgregarRetirado}
-            onDelete={eliminarRetirado}
+            onAdd={
+              jornadaFinalizada
+                ? undefined
+                : handleAgregarRetirado
+            }
+            onDelete={
+              jornadaFinalizada
+                ? undefined
+                : eliminarRetirado
+            }
           />
         </div>
       </div>

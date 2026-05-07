@@ -10,6 +10,8 @@ import { calcularEstadoJornada } from "../domain/jornadaStatus";
 
 export const Resultados = () => {
   const { jornada, closeJornada, reopenJornada } = useJornada();
+  import { calcularRanking } from "../domain/scoring";
+  import { useJugadas } from "../hooks/useJugadas";
 
   const { resultado, updateResultado, deleteResultado } = useResultados(
     jornada?.id
@@ -17,6 +19,15 @@ export const Resultados = () => {
 
   const { carreras } = useCarreras(jornada?.id);
   const { retirados } = useRetirados(jornada?.id);
+  const { jugadas } = useJugadas();
+
+  const jugadasDeLaJornada = jornada
+    ? jugadas.filter((j) => j.jornadaId === jornada.id)
+    : [];
+
+  const rankingFinal = resultado
+    ? calcularRanking(jugadasDeLaJornada, resultado)
+    : [];
 
   const [preguntoCierre, setPreguntoCierre] = useState(false);
 
@@ -24,14 +35,20 @@ export const Resultados = () => {
 
   const estadoDetectado = calcularEstadoJornada(carreras, resultado);
 
+  const jornadaReabierta = (jornada?.reaperturas ?? 0) > 0;
+
   const puedeCerrar =
     jornada &&
     !jornadaFinalizada &&
     estadoDetectado === "FINALIZADA";
 
+  const mostrarPreguntaCierre =
+    puedeCerrar && !jornadaReabierta;
+
+
   useEffect(() => {
     if (!jornada) return;
-    if (!puedeCerrar) return;
+    if (!mostrarPreguntaCierre) return;
     if (preguntoCierre) return;
 
     const confirmar = confirm(
@@ -41,7 +58,14 @@ export const Resultados = () => {
     setPreguntoCierre(true);
 
     if (confirmar) {
-      closeJornada(jornada.id);
+      closeJornada(jornada.id, {
+        ganador: rankingFinal[0]?.nombre ?? "Sin ganador",
+        puntosGanador: rankingFinal[0]?.puntos ?? 0,
+        ranking: rankingFinal.map((r) => ({
+          nombre: r.nombre,
+          puntos: r.puntos,
+        })),
+      });
     }
   }, [puedeCerrar, preguntoCierre, jornada, closeJornada]);
 
@@ -118,7 +142,14 @@ export const Resultados = () => {
           <button
             type="button"
             onClick={() => {
-              closeJornada(jornada.id);
+              closeJornada(jornada.id, {
+                ganador: rankingFinal[0]?.nombre ?? "Sin ganador",
+                puntosGanador: rankingFinal[0]?.puntos ?? 0,
+                ranking: rankingFinal.map((r) => ({
+                  nombre: r.nombre,
+                  puntos: r.puntos,
+                })),
+              });
             }}
           >
             Finalizar jornada

@@ -47,15 +47,41 @@ export const calcularEstadoJornada = (
   return "FINALIZADA";
 };
 
-export const getEstadoJornadaLabel = (status: JornadaStatus) => {
-  if (status === "ABIERTA") return "Abierta";
-  if (status === "PARCIAL") return "Parcial";
-  return "Finalizada";
+export const getEstadoJornadaLabel = (
+  status: JornadaStatus,
+  reaperturas = 0
+) => {
+  if (status === "FINALIZADA") {
+    return "Finalizada";
+  }
+
+  if (status === "PARCIAL") {
+    return "Parcial";
+  }
+
+  if (reaperturas > 0) {
+    return "Reabierta";
+  }
+
+  return "Abierta";
 };
 
-export const getEstadoJornadaClass = (status: JornadaStatus) => {
-  if (status === "ABIERTA") return "status-warn";
-  if (status === "PARCIAL") return "status-partial";
+export const getEstadoJornadaClass = (
+  status: JornadaStatus,
+  reaperturas = 0
+) => {
+  if (status === "FINALIZADA") {
+    return "status-final";
+  }
+
+  if (status === "PARCIAL") {
+    return "status-partial";
+  }
+
+  if (reaperturas > 0) {
+    return "status-reopen";
+  }
+
   return "status-ok";
 };
 

@@ -288,3 +288,13 @@ h1 {
   color: #64748b;
   margin-top: 0.5rem;
 }
+
+.status-final {
+  color: #374151;
+  font-weight: 700;
+}
+
+.status-reopen {
+  color: #ea580c;
+  font-weight: 700;
+}

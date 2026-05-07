@@ -12,7 +12,7 @@ type Props = {
   jornadaId: string;
   carreras: CarreraValida[];
   disabled?: boolean;
-  onSave: (resultado: Resultado) => void;
+  onSave?: (resultado: Resultado) => void;
 };
 
 const toInputValue = (value: number | null | undefined) =>
@@ -56,8 +56,6 @@ export const ResultadoForm = ({
     campo: keyof ResultadoInput,
     valor: string
   ) => {
-    if (disabled) return;
-
     setResultados((prev) => ({
       ...prev,
       [numeroCarrera]: {
@@ -70,10 +68,7 @@ export const ResultadoForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (disabled) {
-      alert("La jornada está finalizada. No se pueden modificar resultados.");
-      return;
-    }
+    if (!onSave) return;
 
     const nuevoResultado: Resultado = {
       jornadaId,
@@ -82,19 +77,10 @@ export const ResultadoForm = ({
 
     for (const carrera of carreras) {
       const numero = carrera.numeroCarrera;
+
       const valores = resultados[numero];
 
       if (!valores) continue;
-
-      const campos = [valores.primero, valores.segundo, valores.tercero];
-      const numeros = campos.filter((v) => v.trim()).map(Number);
-
-      if (numeros.some((n) => isNaN(n) || n <= 0)) {
-        alert(
-          `Los resultados cargados en la carrera ${numero} deben ser números mayores a 0`
-        );
-        return;
-      }
 
       nuevoResultado.resultados[numero] = {
         primero: toNumberOrNull(valores.primero),
@@ -119,6 +105,7 @@ export const ResultadoForm = ({
     <form onSubmit={handleSubmit} className="compact-form">
       {carreras.map((carrera) => {
         const numero = carrera.numeroCarrera;
+
         const valores = resultados[numero] ?? {
           primero: "",
           segundo: "",
@@ -132,6 +119,7 @@ export const ResultadoForm = ({
             <div className="compact-fields-3">
               <div className="form-field">
                 <label>1er lugar</label>
+
                 <input
                   type="number"
                   disabled={disabled}
@@ -144,6 +132,7 @@ export const ResultadoForm = ({
 
               <div className="form-field">
                 <label>2do lugar</label>
+
                 <input
                   type="number"
                   disabled={disabled}
@@ -156,6 +145,7 @@ export const ResultadoForm = ({
 
               <div className="form-field">
                 <label>3er lugar</label>
+
                 <input
                   type="number"
                   disabled={disabled}
@@ -170,7 +160,7 @@ export const ResultadoForm = ({
         );
       })}
 
-      {!disabled && (
+      {!disabled && onSave && (
         <button type="submit">Guardar / actualizar resultados</button>
       )}
 

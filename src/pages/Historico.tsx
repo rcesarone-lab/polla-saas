@@ -1,11 +1,12 @@
 import { useJornada } from "../hooks/useJornada";
 import { useJugadas } from "../hooks/useJugadas";
-import { calcularPuntaje } from "../domain/scoring";
+import { calcularRanking } from "../domain/scoring";
 import { getResultadoByJornada } from "../services/resultados.service";
 import { getCarrerasByJornada } from "../services/carreras.service";
 import {
   calcularEstadoJornada,
   calcularProgresoJornada,
+  getCarrerasPendientes,
   getEstadoJornadaClass,
   getEstadoJornadaLabel,
 } from "../domain/jornadaStatus";
@@ -30,6 +31,7 @@ export const Historico = () => {
                 <th>Total jugadas</th>
                 <th>Progreso</th>
                 <th>Estado</th>
+                <th>Pendientes</th>
                 <th>Ganador</th>
                 <th>Puntos</th>
                 <th>Finalización</th>
@@ -45,23 +47,36 @@ export const Historico = () => {
                 );
 
                 const resultado = getResultadoByJornada(jornada.id);
-
                 const carrerasDeLaJornada = getCarrerasByJornada(jornada.id);
 
-                const estadoJornada = calcularEstadoJornada(carrerasDeLaJornada, resultado);
+                const estadoJornada = calcularEstadoJornada(
+                  carrerasDeLaJornada,
+                  resultado,
+                  jornada.estadoCierre === "FINALIZADA"
+                );
 
-                const progresoJornada = calcularProgresoJornada(carrerasDeLaJornada, resultado);
+                const progresoJornada = calcularProgresoJornada(
+                  carrerasDeLaJornada,
+                  resultado
+                );
 
-                const ranking = resultado
-                  ? jugadasDeLaJornada
-                    .map((jugada) => ({
-                      nombre: jugada.nombre,
-                      puntos: calcularPuntaje(jugada, resultado),
-                    }))
-                    .sort((a, b) => b.puntos - a.puntos)
-                  : [];
+                const carrerasPendientes = getCarrerasPendientes(
+                  carrerasDeLaJornada,
+                  resultado
+                );
 
-                const ganador = ranking.length > 0 ? ranking[0] : null;
+                const ranking =
+                  jornada.snapshotFinal?.ranking ??
+                  (resultado
+                    ? calcularRanking(jugadasDeLaJornada, resultado)
+                    : []);
+
+                const ganador = jornada.snapshotFinal
+                  ? {
+                      nombre: jornada.snapshotFinal.ganador,
+                      puntos: jornada.snapshotFinal.puntosGanador,
+                    }
+                  : ranking[0];
 
                 return (
                   <tr key={jornada.id}>
@@ -75,18 +90,34 @@ export const Historico = () => {
                     </td>
 
                     <td>
-                      <span className={getEstadoJornadaClass(estadoJornada)}>
-                        {getEstadoJornadaLabel(estadoJornada)}
+                      <span
+                        className={getEstadoJornadaClass(
+                          estadoJornada,
+                          jornada.reaperturas ?? 0
+                        )}
+                      >
+                        {getEstadoJornadaLabel(
+                          estadoJornada,
+                          jornada.reaperturas ?? 0
+                        )}
                       </span>
+                    </td>
+
+                    <td>
+                      {carrerasPendientes.length === 0
+                        ? "-"
+                        : carrerasPendientes.join(", ")}
                     </td>
 
                     <td>{ganador ? ganador.nombre : "-"}</td>
                     <td>{ganador ? ganador.puntos : "-"}</td>
+
                     <td>
                       {jornada.fechaFinalizacion
                         ? new Date(jornada.fechaFinalizacion).toLocaleString()
                         : "-"}
                     </td>
+
                     <td>{jornada.reaperturas ?? 0}</td>
 
                     <td>

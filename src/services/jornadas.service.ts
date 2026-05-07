@@ -49,16 +49,27 @@ export const crearJornada = (fecha: string): Jornada => {
   return nueva;
 };
 
-export const finalizarJornada = (jornadaId: string) => {
+export const finalizarJornada = (
+  jornadaId: string,
+  snapshotFinal?: {
+    ganador: string;
+    puntosGanador: number;
+    ranking: {
+      nombre: string;
+      puntos: number;
+    }[];
+  }
+) => {
   const jornadas = getJornadas();
 
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
       ? {
-          ...jornada,
-          estadoCierre: "FINALIZADA" as const,
-          fechaFinalizacion: new Date().toISOString(),
-        }
+        ...jornada,
+        estadoCierre: "FINALIZADA" as const,
+        fechaFinalizacion: new Date().toISOString(),
+        snapshotFinal,
+      }
       : jornada
   );
 
@@ -71,6 +82,7 @@ export const finalizarJornada = (jornadaId: string) => {
       ...actual,
       estadoCierre: "FINALIZADA",
       fechaFinalizacion: new Date().toISOString(),
+      snapshotFinal,
     });
   }
 };
@@ -81,11 +93,11 @@ export const reabrirJornada = (jornadaId: string) => {
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
       ? {
-          ...jornada,
-          estadoCierre: "ABIERTA" as const,
-          fechaReapertura: new Date().toISOString(),
-          reaperturas: (jornada.reaperturas ?? 0) + 1,
-        }
+        ...jornada,
+        estadoCierre: "ABIERTA" as const,
+        fechaReapertura: new Date().toISOString(),
+        reaperturas: (jornada.reaperturas ?? 0) + 1,
+      }
       : jornada
   );
 
