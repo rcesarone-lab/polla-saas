@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ResultadoForm } from "../components/resultados/ResultadoForm";
 import { useJornada } from "../hooks/useJornada";
 import { useResultados } from "../hooks/useResultados";
@@ -5,9 +6,10 @@ import { useCarreras } from "../hooks/useCarreras";
 import { useRetirados } from "../hooks/useRetirados";
 import type { Resultado } from "../domain/types";
 import { validarResultado } from "../domain/validarResultado";
+import { calcularEstadoJornada } from "../domain/jornadaStatus";
 
 export const Resultados = () => {
-  const { jornada } = useJornada();
+  const { jornada, closeJornada, reopenJornada } = useJornada();
 
   const { resultado, updateResultado, deleteResultado } = useResultados(
     jornada?.id
@@ -15,6 +17,33 @@ export const Resultados = () => {
 
   const { carreras } = useCarreras(jornada?.id);
   const { retirados } = useRetirados(jornada?.id);
+
+  const [preguntoCierre, setPreguntoCierre] = useState(false);
+
+  const jornadaFinalizada = jornada?.estadoCierre === "FINALIZADA";
+
+  const estadoDetectado = calcularEstadoJornada(carreras, resultado);
+
+  const puedeCerrar =
+    jornada &&
+    !jornadaFinalizada &&
+    estadoDetectado === "FINALIZADA";
+
+  useEffect(() => {
+    if (!jornada) return;
+    if (!puedeCerrar) return;
+    if (preguntoCierre) return;
+
+    const confirmar = confirm(
+      "Todos los resultados están cargados. ¿Deseas finalizar la jornada?"
+    );
+
+    setPreguntoCierre(true);
+
+    if (confirmar) {
+      closeJornada(jornada.id);
+    }
+  }, [puedeCerrar, preguntoCierre, jornada, closeJornada]);
 
   if (!jornada) {
     return (
@@ -27,6 +56,11 @@ export const Resultados = () => {
   }
 
   const handleSaveResultado = (nuevoResultado: Resultado) => {
+    if (jornadaFinalizada) {
+      alert("La jornada está finalizada. No se pueden modificar resultados.");
+      return;
+    }
+
     try {
       validarResultado(nuevoResultado, carreras, retirados);
       updateResultado(nuevoResultado);
@@ -49,7 +83,48 @@ export const Resultados = () => {
         <p>
           {jornada.nombre} - {jornada.fecha}
         </p>
+
+        {jornadaFinalizada && (
+          <p className="status-ok">Jornada finalizada</p>
+        )}
+
+        {jornadaFinalizada && (
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              const confirmar = confirm(
+                "¿Deseas reabrir esta jornada para modificar resultados?"
+              );
+
+              if (confirmar) {
+                reopenJornada(jornada.id);
+              }
+            }}
+          >
+            Reabrir jornada
+          </button>
+        )}
       </div>
+
+      {puedeCerrar && (
+        <div
+          className="card"
+          style={{ background: "#ecfdf5", color: "#065f46" }}
+        >
+          <h2>Jornada lista para finalizar</h2>
+          <p>Todos los resultados están completos.</p>
+
+          <button
+            type="button"
+            onClick={() => {
+              closeJornada(jornada.id);
+            }}
+          >
+            Finalizar jornada
+          </button>
+        </div>
+      )}
 
       <div className="card">
         <p>
@@ -57,14 +132,21 @@ export const Resultados = () => {
           actualizarlos carrera por carrera.
         </p>
 
+        {jornadaFinalizada && (
+          <p className="status-ok">
+            Esta jornada está finalizada. La carga de resultados está bloqueada.
+          </p>
+        )}
+
         <ResultadoForm
           resultado={resultado}
           jornadaId={jornada.id}
           carreras={carreras}
+          disabled={jornadaFinalizada}
           onSave={handleSaveResultado}
         />
 
-        {resultado && (
+        {resultado && !jornadaFinalizada && (
           <button
             type="button"
             className="danger-button"
@@ -101,12 +183,12 @@ export const Resultados = () => {
 
             <tbody>
               {carreras.map((carrera) => {
-                const numeroCarrera = carrera.numeroCarrera;
-                const resultadoCarrera = resultado.resultados[numeroCarrera];
+                const numero = carrera.numeroCarrera;
+                const resultadoCarrera = resultado.resultados[numero];
 
                 return (
                   <tr key={carrera.id}>
-                    <td>Carrera {numeroCarrera}</td>
+                    <td>Carrera {numero}</td>
                     <td>{resultadoCarrera?.primero ?? "-"}</td>
                     <td>{resultadoCarrera?.segundo ?? "-"}</td>
                     <td>{resultadoCarrera?.tercero ?? "-"}</td>

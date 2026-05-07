@@ -43,3 +43,45 @@ export const crearJornada = (fecha: string): Jornada => {
 
   return nueva;
 };
+
+export const finalizarJornada = (jornadaId: string) => {
+  const jornadas = getJornadas();
+
+  const nuevas = jornadas.map((jornada) =>
+    jornada.id === jornadaId
+      ? { ...jornada, estadoCierre: "FINALIZADA" as const }
+      : jornada
+  );
+
+  saveJornadas(nuevas);
+
+  const actual = getJornadaActual();
+
+  if (actual?.id === jornadaId) {
+    setJornadaActual({
+      ...actual,
+      estadoCierre: "FINALIZADA",
+    });
+  }
+};
+
+export const reabrirJornada = (jornadaId: string) => {
+  const jornadas = getJornadas();
+
+  const nuevas = jornadas.map((jornada) =>
+    jornada.id === jornadaId
+      ? { ...jornada, estadoCierre: "ABIERTA" as const }
+      : jornada
+  );
+
+  saveJornadas(nuevas);
+
+  const actual = getJornadaActual();
+
+  if (actual?.id === jornadaId) {
+    setJornadaActual({
+      ...actual,
+      estadoCierre: "ABIERTA",
+    });
+  }
+};

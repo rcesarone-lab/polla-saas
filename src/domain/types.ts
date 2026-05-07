@@ -3,6 +3,7 @@ export type Jornada = {
   nombre: string;
   fecha: string;
   fechaCreacion: string;
+  estadoCierre?: "ABIERTA" | "FINALIZADA";
 };
 
 export type Jugada = {

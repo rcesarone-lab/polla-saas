@@ -5,6 +5,8 @@ import {
   setJornadaActual,
   getJornadas,
   crearJornada,
+  finalizarJornada,
+  reabrirJornada,
 } from "../services/jornadas.service";
 
 export const useJornada = () => {
@@ -38,10 +40,51 @@ export const useJornada = () => {
     }
   };
 
+  const closeJornada = (jornadaId: string) => {
+    if (!jornada) return;
+
+    finalizarJornada(jornadaId);
+
+    const actualizada: Jornada = {
+      ...jornada,
+      estadoCierre: "FINALIZADA",
+    };
+
+    setJornada(actualizada);
+    setJornadas((prev) =>
+      prev.map((j) =>
+        j.id === jornadaId
+          ? { ...j, estadoCierre: "FINALIZADA" }
+          : j
+      )
+    );
+  };
+
+  const reopenJornada = (jornadaId: string) => {
+    reabrirJornada(jornadaId);
+
+    const actualizada = {
+      ...jornada,
+      estadoCierre: "ABIERTA" as const,
+    };
+
+    setJornada(actualizada);
+
+    setJornadas((prev) =>
+      prev.map((j) =>
+        j.id === jornadaId
+          ? { ...j, estadoCierre: "ABIERTA" as const }
+          : j
+      )
+    );
+  };
+
   return {
     jornada,
     jornadas,
     changeJornada,
     addJornada,
+    closeJornada,
+    reopenJornada,
   };
 };

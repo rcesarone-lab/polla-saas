@@ -29,10 +29,11 @@ export const Configuracion = () => {
   );
 
   const { jugadas, updateJugada } = useJugadas();
-
   const [primerLugar, setPrimerLugar] = useState("");
   const [segundoLugar, setSegundoLugar] = useState("");
   const [tercerLugar, setTercerLugar] = useState("");
+
+  const jornadaFinalizada = jornada?.estadoCierre === "FINALIZADA";
 
   useEffect(() => {
     setPrimerLugar("");
@@ -42,6 +43,11 @@ export const Configuracion = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (jornadaFinalizada) {
+      alert("La jornada está finalizada. No se puede modificar la regla.");
+      return;
+    }
 
     const p1 = Number(primerLugar);
     const p2 = Number(segundoLugar);
@@ -68,6 +74,12 @@ export const Configuracion = () => {
   };
 
   const handleEliminarRegla = () => {
+
+    if (jornadaFinalizada) {
+      alert("La jornada está finalizada. No se puede eliminar la regla.");
+      return;
+    }
+
     const confirmar = confirm("¿Eliminar la regla de puntuación?");
 
     if (!confirmar) return;
@@ -237,6 +249,7 @@ export const Configuracion = () => {
                 <label>1°</label>
                 <input
                   type="number"
+                  disabled={jornadaFinalizada}
                   value={primerLugar}
                   onChange={(e) => setPrimerLugar(e.target.value)}
                 />
@@ -246,6 +259,7 @@ export const Configuracion = () => {
                 <label>2°</label>
                 <input
                   type="number"
+                  disabled={jornadaFinalizada}
                   value={segundoLugar}
                   onChange={(e) => setSegundoLugar(e.target.value)}
                 />
@@ -255,6 +269,7 @@ export const Configuracion = () => {
                 <label>3°</label>
                 <input
                   type="number"
+                  disabled={jornadaFinalizada}
                   value={tercerLugar}
                   onChange={(e) => setTercerLugar(e.target.value)}
                 />
@@ -262,7 +277,7 @@ export const Configuracion = () => {
             </div>
 
             <div className="actions-row">
-              <button type="submit">Guardar</button>
+              {!jornadaFinalizada && <button type="submit">Guardar</button>}
 
               {configuracion && (
                 <button
@@ -280,6 +295,7 @@ export const Configuracion = () => {
         <div className="card">
           <CarrerasPanel
             carreras={carreras}
+            disabled={jornadaFinalizada}
             onAdd={agregarCarrera}
             onDelete={handleEliminarCarrera}
             onDeleteAll={handleEliminarTodasCarreras}
@@ -290,6 +306,7 @@ export const Configuracion = () => {
           <RetiradosPanel
             retirados={retirados}
             carreras={carreras}
+            disabled={jornadaFinalizada}
             onAdd={handleAgregarRetirado}
             onDelete={eliminarRetirado}
           />

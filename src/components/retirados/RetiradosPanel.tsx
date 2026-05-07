@@ -4,6 +4,7 @@ import type { CarreraValida, Retirado } from "../../domain/types";
 type Props = {
   retirados: Retirado[];
   carreras: CarreraValida[];
+  disabled?: boolean;
   onAdd: (carrera: number, caballo: number) => void;
   onDelete: (carrera: number, caballo: number) => void;
 };
@@ -11,6 +12,7 @@ type Props = {
 export const RetiradosPanel = ({
   retirados,
   carreras,
+  disabled = false,
   onAdd,
   onDelete,
 }: Props) => {
@@ -18,6 +20,11 @@ export const RetiradosPanel = ({
   const [caballo, setCaballo] = useState("");
 
   const handleAdd = () => {
+    if (disabled) {
+      alert("La jornada está finalizada. No se pueden modificar retirados.");
+      return;
+    }
+
     const nroCarrera = Number(carrera);
     const nroCaballo = Number(caballo);
 
@@ -53,6 +60,12 @@ export const RetiradosPanel = ({
     <div>
       <h2>Retirados</h2>
 
+      {disabled && (
+        <p className="status-ok">
+          Jornada finalizada: retirados bloqueados.
+        </p>
+      )}
+
       {carreras.length === 0 ? (
         <p>No hay carreras válidas configuradas.</p>
       ) : (
@@ -62,6 +75,7 @@ export const RetiradosPanel = ({
               <div className="form-field">
                 <label>Carrera</label>
                 <select
+                  disabled={disabled}
                   value={carrera}
                   onChange={(e) => setCarrera(e.target.value)}
                 >
@@ -79,6 +93,7 @@ export const RetiradosPanel = ({
                 <label>Caballo</label>
                 <input
                   type="number"
+                  disabled={disabled}
                   value={caballo}
                   onChange={(e) => setCaballo(e.target.value)}
                   placeholder="Nro"
@@ -86,9 +101,11 @@ export const RetiradosPanel = ({
               </div>
             </div>
 
-            <button type="button" onClick={handleAdd}>
-              Agregar
-            </button>
+            {!disabled && (
+              <button type="button" onClick={handleAdd}>
+                Agregar
+              </button>
+            )}
           </div>
 
           {retirados.length === 0 ? (
@@ -107,16 +124,22 @@ export const RetiradosPanel = ({
                   <tr key={r.id}>
                     <td>Carrera {r.carrera}</td>
                     <td>
-                      {r.caballos.map((caballo) => (
-                        <button
-                          key={caballo}
-                          type="button"
-                          className="secondary-button"
-                          onClick={() => onDelete(r.carrera, caballo)}
-                        >
-                          {caballo} ✕
-                        </button>
-                      ))}
+                      {r.caballos.map((caballo) =>
+                        !disabled ? (
+                          <button
+                            key={caballo}
+                            type="button"
+                            className="secondary-button"
+                            onClick={() => onDelete(r.carrera, caballo)}
+                          >
+                            {caballo} ✕
+                          </button>
+                        ) : (
+                          <span key={caballo} className="auto-change">
+                            {caballo}
+                          </span>
+                        )
+                      )}
                     </td>
                   </tr>
                 ))}

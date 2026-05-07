@@ -8,6 +8,8 @@ import {
   calcularProgresoJornada,
   getEstadoJornadaClass,
   getEstadoJornadaLabel,
+  getCarrerasCompletas,
+  getCarrerasPendientes,
 } from "../domain/jornadaStatus";
 
 export const Dashboard = () => {
@@ -33,6 +35,10 @@ export const Dashboard = () => {
   const estadoJornada = calcularEstadoJornada(carreras, resultado);
 
   const progresoJornada = calcularProgresoJornada(carreras, resultado);
+
+  const carrerasCompletas = getCarrerasCompletas(carreras, resultado);
+
+  const carrerasPendientes = getCarrerasPendientes(carreras, resultado);
 
   const ranking = resultado
     ? jugadasDeLaJornada
@@ -78,7 +84,28 @@ export const Dashboard = () => {
         </div>
 
         <div className="card">
-          <h2>Ganador</h2>
+          <h2>Carreras completas</h2>
+
+          {carrerasCompletas.length === 0 ? (
+            <p>Ninguna</p>
+          ) : (
+            <p>{carrerasCompletas.join(", ")}</p>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>Carreras pendientes</h2>
+
+          {carrerasPendientes.length === 0 ? (
+            <p>Ninguna</p>
+          ) : (
+            <p>{carrerasPendientes.join(", ")}</p>
+          )}
+        </div>
+
+        <div className="card">
+          <h2>{estadoJornada === "FINALIZADA" ? "Ganador" : "Líder actual"}</h2>
+
           {!ganador ? (
             <p>No disponible</p>
           ) : (
@@ -89,18 +116,30 @@ export const Dashboard = () => {
         </div>
 
         <div className="card">
-          <h2>Los 3 mejores</h2>
+          <h2>
+            {estadoJornada === "FINALIZADA"
+              ? "Ranking final"
+              : "Ranking parcial"}
+          </h2>
 
           {ranking.length === 0 ? (
             <p>No disponible</p>
           ) : (
-            <ol>
-              {ranking.slice(0, 3).map((r, i) => (
-                <li key={`${r.nombre}-${i}`}>
-                  {r.nombre} → {r.puntos} puntos
-                </li>
-              ))}
-            </ol>
+            <>
+              <ol>
+                {ranking.slice(0, 3).map((r, i) => (
+                  <li key={`${r.nombre}-${i}`}>
+                    {r.nombre} → {r.puntos} puntos
+                  </li>
+                ))}
+              </ol>
+
+              {estadoJornada !== "FINALIZADA" && (
+                <p className="ranking-note">
+                  Ranking calculado con los resultados cargados hasta ahora.
+                </p>
+              )}
+            </>
           )}
         </div>
       </div>

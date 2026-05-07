@@ -1,16 +1,5 @@
 import { useEffect, useState } from "react";
-import type {
-  CarreraValida,
-  PosicionResultado,
-  Resultado,
-} from "../../domain/types";
-
-type Props = {
-  resultado: Resultado | null;
-  jornadaId: string;
-  carreras: CarreraValida[];
-  onSave: (resultado: Resultado) => void;
-};
+import type { CarreraValida, Resultado } from "../../domain/types";
 
 type ResultadoInput = {
   primero: string;
@@ -18,11 +7,13 @@ type ResultadoInput = {
   tercero: string;
 };
 
-const emptyResultadoInput = (): ResultadoInput => ({
-  primero: "",
-  segundo: "",
-  tercero: "",
-});
+type Props = {
+  resultado: Resultado | null;
+  jornadaId: string;
+  carreras: CarreraValida[];
+  disabled?: boolean;
+  onSave: (resultado: Resultado) => void;
+};
 
 const toInputValue = (value: number | null | undefined) =>
   value === null || value === undefined ? "" : value.toString();
@@ -36,39 +27,42 @@ export const ResultadoForm = ({
   resultado,
   jornadaId,
   carreras,
+  disabled = false,
   onSave,
 }: Props) => {
-  const [resultados, setResultados] = useState<
-    Record<number, ResultadoInput>
-  >({});
+  const [resultados, setResultados] = useState<Record<number, ResultadoInput>>(
+    {}
+  );
 
   useEffect(() => {
-    const nuevos: Record<number, ResultadoInput> = {};
+    const nuevosResultados: Record<number, ResultadoInput> = {};
 
     carreras.forEach((carrera) => {
-      const numeroCarrera = carrera.numeroCarrera;
-      const resultadoCarrera = resultado?.resultados[numeroCarrera];
+      const numero = carrera.numeroCarrera;
+      const resultadoCarrera = resultado?.resultados[numero];
 
-      nuevos[numeroCarrera] = {
+      nuevosResultados[numero] = {
         primero: toInputValue(resultadoCarrera?.primero),
         segundo: toInputValue(resultadoCarrera?.segundo),
         tercero: toInputValue(resultadoCarrera?.tercero),
       };
     });
 
-    setResultados(nuevos);
+    setResultados(nuevosResultados);
   }, [resultado, carreras]);
 
   const updateCampo = (
-    carrera: number,
+    numeroCarrera: number,
     campo: keyof ResultadoInput,
-    value: string
+    valor: string
   ) => {
+    if (disabled) return;
+
     setResultados((prev) => ({
       ...prev,
-      [carrera]: {
-        ...(prev[carrera] ?? emptyResultadoInput()),
-        [campo]: value,
+      [numeroCarrera]: {
+        ...prev[numeroCarrera],
+        [campo]: valor,
       },
     }));
   };
@@ -76,37 +70,37 @@ export const ResultadoForm = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (disabled) {
+      alert("La jornada está finalizada. No se pueden modificar resultados.");
+      return;
+    }
+
     const nuevoResultado: Resultado = {
       jornadaId,
       resultados: {},
     };
 
     for (const carrera of carreras) {
-      const numeroCarrera = carrera.numeroCarrera;
-      const valores = resultados[numeroCarrera] ?? emptyResultadoInput();
+      const numero = carrera.numeroCarrera;
+      const valores = resultados[numero];
 
-      const numeros = [
-        valores.primero,
-        valores.segundo,
-        valores.tercero,
-      ]
-        .filter((v) => v.trim())
-        .map(Number);
+      if (!valores) continue;
+
+      const campos = [valores.primero, valores.segundo, valores.tercero];
+      const numeros = campos.filter((v) => v.trim()).map(Number);
 
       if (numeros.some((n) => isNaN(n) || n <= 0)) {
         alert(
-          `Los resultados cargados en la carrera ${numeroCarrera} deben ser números mayores a 0`
+          `Los resultados cargados en la carrera ${numero} deben ser números mayores a 0`
         );
         return;
       }
 
-      const resultadoCarrera: PosicionResultado = {
+      nuevoResultado.resultados[numero] = {
         primero: toNumberOrNull(valores.primero),
         segundo: toNumberOrNull(valores.segundo),
         tercero: toNumberOrNull(valores.tercero),
       };
-
-      nuevoResultado.resultados[numeroCarrera] = resultadoCarrera;
     }
 
     onSave(nuevoResultado);
@@ -115,8 +109,8 @@ export const ResultadoForm = ({
   if (carreras.length === 0) {
     return (
       <p>
-        No hay carreras válidas cargadas. Primero configura las carreras de la
-        jornada.
+        No hay carreras válidas configuradas. Primero debes cargarlas en
+        Configuración.
       </p>
     );
   }
@@ -124,21 +118,26 @@ export const ResultadoForm = ({
   return (
     <form onSubmit={handleSubmit} className="compact-form">
       {carreras.map((carrera) => {
-        const numeroCarrera = carrera.numeroCarrera;
-        const valores = resultados[numeroCarrera] ?? emptyResultadoInput();
+        const numero = carrera.numeroCarrera;
+        const valores = resultados[numero] ?? {
+          primero: "",
+          segundo: "",
+          tercero: "",
+        };
 
         return (
           <div key={carrera.id} className="card">
-            <h2>Carrera {numeroCarrera}</h2>
+            <h2>Carrera {numero}</h2>
 
             <div className="compact-fields-3">
               <div className="form-field">
                 <label>1er lugar</label>
                 <input
                   type="number"
+                  disabled={disabled}
                   value={valores.primero}
                   onChange={(e) =>
-                    updateCampo(numeroCarrera, "primero", e.target.value)
+                    updateCampo(numero, "primero", e.target.value)
                   }
                 />
               </div>
@@ -147,9 +146,10 @@ export const ResultadoForm = ({
                 <label>2do lugar</label>
                 <input
                   type="number"
+                  disabled={disabled}
                   value={valores.segundo}
                   onChange={(e) =>
-                    updateCampo(numeroCarrera, "segundo", e.target.value)
+                    updateCampo(numero, "segundo", e.target.value)
                   }
                 />
               </div>
@@ -158,9 +158,10 @@ export const ResultadoForm = ({
                 <label>3er lugar</label>
                 <input
                   type="number"
+                  disabled={disabled}
                   value={valores.tercero}
                   onChange={(e) =>
-                    updateCampo(numeroCarrera, "tercero", e.target.value)
+                    updateCampo(numero, "tercero", e.target.value)
                   }
                 />
               </div>
@@ -169,7 +170,15 @@ export const ResultadoForm = ({
         );
       })}
 
-      <button type="submit">Guardar / actualizar resultados</button>
+      {!disabled && (
+        <button type="submit">Guardar / actualizar resultados</button>
+      )}
+
+      {disabled && (
+        <p className="status-ok">
+          Jornada finalizada: resultados bloqueados.
+        </p>
+      )}
     </form>
   );
 };

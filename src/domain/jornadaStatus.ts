@@ -16,8 +16,12 @@ const resultadoCompleto = (resultadoCarrera: {
 
 export const calcularEstadoJornada = (
   carreras: CarreraValida[],
-  resultado: Resultado | null
+  resultado: Resultado | null,
+  jornadaCerrada = false
 ): JornadaStatus => {
+  if (jornadaCerrada) {
+    return "FINALIZADA";
+  }
   if (!resultado || carreras.length === 0) {
     return "ABIERTA";
   }
@@ -82,4 +86,32 @@ export const calcularProgresoJornada = (
     total: carreras.length,
     porcentaje,
   };
+};
+
+export const getCarrerasCompletas = (
+  carreras: CarreraValida[],
+  resultado: Resultado | null
+): number[] => {
+  if (!resultado) return [];
+
+  return carreras
+    .filter((carrera) => {
+      const resultadoCarrera = resultado.resultados[carrera.numeroCarrera];
+
+      if (!resultadoCarrera) return false;
+
+      return resultadoCompleto(resultadoCarrera);
+    })
+    .map((c) => c.numeroCarrera);
+};
+
+export const getCarrerasPendientes = (
+  carreras: CarreraValida[],
+  resultado: Resultado | null
+): number[] => {
+  const completas = getCarrerasCompletas(carreras, resultado);
+
+  return carreras
+    .map((c) => c.numeroCarrera)
+    .filter((numero) => !completas.includes(numero));
 };

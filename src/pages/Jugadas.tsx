@@ -19,6 +19,7 @@ export const Jugadas = () => {
   const { retirados } = useRetirados(jornada?.id);
 
   const [jugadaEditando, setJugadaEditando] = useState<Jugada | null>(null);
+  const jornadaFinalizada = jornada?.estadoCierre === "FINALIZADA";
 
   const handleSubmitJugada = (data: {
     nombre: string;
@@ -26,6 +27,11 @@ export const Jugadas = () => {
   }): { success: boolean; errorCarrera?: number } => {
     if (!jornada) {
       alert("Primero debes crear o seleccionar una jornada");
+      return { success: false };
+    }
+
+    if (jornadaFinalizada) {
+      alert("La jornada está finalizada. No se pueden modificar jugadas.");
       return { success: false };
     }
 
@@ -137,6 +143,10 @@ export const Jugadas = () => {
               carreras válidas de esta jornada.
             </p>
           </div>
+        ) : jornadaFinalizada ? (
+          <p className="status-ok">
+            Jornada finalizada: la carga y edición de jugadas está bloqueada.
+          </p>
         ) : (
           <JugadaForm
             jugadaEditando={jugadaEditando}
@@ -152,7 +162,14 @@ export const Jugadas = () => {
           jugadas={jugadasDeLaJornada}
           carreras={carreras}
           resultado={resultado}
-          onEdit={setJugadaEditando}
+          onEdit={(jugada) => {
+            if (jornadaFinalizada) {
+              alert("La jornada está finalizada. No se pueden editar jugadas.");
+              return;
+            }
+
+            setJugadaEditando(jugada);
+          }}
           onDelete={deleteJugada}
         />
       </div>

@@ -3,16 +3,28 @@ import type { CarreraValida } from "../../domain/types";
 
 type Props = {
   carreras: CarreraValida[];
+  disabled?: boolean;
   onAdd: (numeroCarrera: number, cantidadEjemplares: number) => void;
   onDelete: (id: string) => void;
   onDeleteAll: () => void;
 };
 
-export const CarrerasPanel = ({ carreras, onAdd, onDelete, onDeleteAll }: Props) => {
+export const CarrerasPanel = ({
+  carreras,
+  disabled = false,
+  onAdd,
+  onDelete,
+  onDeleteAll,
+}: Props) => {
   const [numeroCarrera, setNumeroCarrera] = useState("");
   const [cantidadEjemplares, setCantidadEjemplares] = useState("");
 
   const handleAdd = () => {
+    if (disabled) {
+      alert("La jornada está finalizada. No se pueden modificar carreras.");
+      return;
+    }
+
     const numero = Number(numeroCarrera);
     const cantidad = Number(cantidadEjemplares);
 
@@ -36,39 +48,53 @@ export const CarrerasPanel = ({ carreras, onAdd, onDelete, onDeleteAll }: Props)
     <div>
       <h2>Carreras válidas</h2>
 
-      <div className="form-grid">
-        <div className="form-field">
-          <label>Nro. carrera</label>
-          <input
-            type="number"
-            placeholder="Ej: 7"
-            value={numeroCarrera}
-            onChange={(e) => setNumeroCarrera(e.target.value)}
-          />
+      {disabled && (
+        <p className="status-ok">
+          Jornada finalizada: configuración de carreras bloqueada.
+        </p>
+      )}
+
+      <div className="compact-form">
+        <div className="compact-fields-2">
+          <div className="form-field">
+            <label>Nro. carrera</label>
+            <input
+              type="number"
+              disabled={disabled}
+              placeholder="Ej: 7"
+              value={numeroCarrera}
+              onChange={(e) => setNumeroCarrera(e.target.value)}
+            />
+          </div>
+
+          <div className="form-field">
+            <label>Ejemplares</label>
+            <input
+              type="number"
+              disabled={disabled}
+              placeholder="Ej: 14"
+              value={cantidadEjemplares}
+              onChange={(e) => setCantidadEjemplares(e.target.value)}
+            />
+          </div>
         </div>
 
-        <div className="form-field">
-          <label>Cantidad ejemplares</label>
-          <input
-            type="number"
-            placeholder="Ej: 14"
-            value={cantidadEjemplares}
-            onChange={(e) => setCantidadEjemplares(e.target.value)}
-          />
-        </div>
+        {!disabled && (
+          <div className="actions-row">
+            <button type="button" onClick={handleAdd}>
+              Agregar
+            </button>
 
-        <button type="button" onClick={handleAdd}>
-          Agregar carrera
-        </button>
-
-        {carreras.length > 0 && (
-          <button
-            type="button"
-            className="danger-button"
-            onClick={onDeleteAll}
-          >
-            Eliminar todas
-          </button>
+            {carreras.length > 0 && (
+              <button
+                type="button"
+                className="danger-button small"
+                onClick={onDeleteAll}
+              >
+                Eliminar todas
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -90,21 +116,17 @@ export const CarrerasPanel = ({ carreras, onAdd, onDelete, onDeleteAll }: Props)
                 <td>Carrera {c.numeroCarrera}</td>
                 <td>{c.cantidadEjemplares}</td>
                 <td>
-                  <button
-                    type="button"
-                    className="danger-button"
-                    onClick={() => {
-                      const confirmar = confirm(
-                        "¿Eliminar esta carrera válida?"
-                      );
-
-                      if (confirmar) {
-                        onDelete(c.id);
-                      }
-                    }}
-                  >
-                    Eliminar
-                  </button>
+                  {!disabled ? (
+                    <button
+                      type="button"
+                      className="danger-button"
+                      onClick={() => onDelete(c.id)}
+                    >
+                      Eliminar
+                    </button>
+                  ) : (
+                    "-"
+                  )}
                 </td>
               </tr>
             ))}
