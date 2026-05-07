@@ -83,6 +83,13 @@ export const finalizarJornada = (
 
   saveJornadas(nuevas);
 
+  registrarAuditoria({
+    jornadaId,
+    accion: "FINALIZAR_JORNADA",
+    descripcion: "La jornada fue finalizada y se generó snapshot histórico.",
+    severidad: "CRITICAL",
+  });
+
   const actual = getJornadaActual();
 
   if (actual?.id === jornadaId) {

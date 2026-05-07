@@ -11,6 +11,7 @@ import { useResultados } from "../hooks/useResultados";
 import { obtenerSiguienteDisponible } from "../domain/reasignarCaballo";
 import { getRetiradosByJornada } from "../services/retirados.service";
 import { registrarAuditoria } from "../services/auditoria.service";
+import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
 
 export const Configuracion = () => {
   const { configuracion, updateConfiguracion, deleteConfiguracion } =
@@ -359,6 +360,9 @@ export const Configuracion = () => {
                 : eliminarRetirado
             }
           />
+
+          <AuditoriaPanel jornadaId={jornada.id} />
+
         </div>
       </div>
     </div>

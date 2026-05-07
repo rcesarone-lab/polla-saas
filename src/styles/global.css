@@ -336,3 +336,44 @@ h1 {
   }
 }
 
+.audit-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.audit-item {
+  border-left: 4px solid #64748b;
+  background: #f8fafc;
+  padding: 0.6rem;
+  border-radius: 8px;
+}
+
+.audit-item strong {
+  display: block;
+  font-size: 0.8rem;
+}
+
+.audit-item span {
+  display: block;
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.15rem;
+}
+
+.audit-item p {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+}
+
+.audit-info {
+  border-left-color: #2563eb;
+}
+
+.audit-warning {
+  border-left-color: #f59e0b;
+}
+
+.audit-critical {
+  border-left-color: #dc2626;
+}
+
