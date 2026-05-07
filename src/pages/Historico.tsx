@@ -32,6 +32,8 @@ export const Historico = () => {
                 <th>Estado</th>
                 <th>Ganador</th>
                 <th>Puntos</th>
+                <th>Finalización</th>
+                <th>Reaperturas</th>
                 <th>Acción</th>
               </tr>
             </thead>
@@ -80,6 +82,12 @@ export const Historico = () => {
 
                     <td>{ganador ? ganador.nombre : "-"}</td>
                     <td>{ganador ? ganador.puntos : "-"}</td>
+                    <td>
+                      {jornada.fechaFinalizacion
+                        ? new Date(jornada.fechaFinalizacion).toLocaleString()
+                        : "-"}
+                    </td>
+                    <td>{jornada.reaperturas ?? 0}</td>
 
                     <td>
                       <button onClick={() => changeJornada(jornada.id)}>

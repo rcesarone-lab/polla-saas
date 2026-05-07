@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Jornada } from "../domain/types";
+
 import {
   getJornadaActual,
   setJornadaActual,
@@ -14,47 +15,56 @@ export const useJornada = () => {
   const [jornadas, setJornadas] = useState<Jornada[]>([]);
 
   useEffect(() => {
-    const actual = getJornadaActual();
     const lista = getJornadas();
 
-    setJornada(actual);
     setJornadas(lista);
+
+    const actual = getJornadaActual();
+
+    if (actual) {
+      setJornada(actual);
+    }
   }, []);
 
   const changeJornada = (id: string) => {
-    const nueva = jornadas.find((j) => j.id === id);
-    if (!nueva) return;
+    const seleccionada =
+      jornadas.find((j) => j.id === id) ?? null;
 
+    if (!seleccionada) return;
+
+    setJornada(seleccionada);
+    setJornadaActual(seleccionada);
+  };
+
+  const addJornada = (fecha: string) => {
+    const nueva = crearJornada(fecha);
+
+    const nuevas = [...jornadas, nueva];
+
+    setJornadas(nuevas);
     setJornada(nueva);
     setJornadaActual(nueva);
   };
 
-  const addJornada = (fecha: string) => {
-    try {
-      const nueva = crearJornada(fecha);
-      setJornadas((prev) => [...prev, nueva]);
-      setJornada(nueva);
-      setJornadaActual(nueva);
-    } catch (error) {
-      alert("Ya existe una jornada para esa fecha");
-    }
-  };
-
   const closeJornada = (jornadaId: string) => {
-    if (!jornada) return;
-
     finalizarJornada(jornadaId);
 
-    const actualizada: Jornada = {
+    const actualizada = {
       ...jornada,
-      estadoCierre: "FINALIZADA",
+      estadoCierre: "FINALIZADA" as const,
+      fechaFinalizacion: new Date().toISOString(),
     };
 
-    setJornada(actualizada);
+    setJornada(actualizada as Jornada);
+
     setJornadas((prev) =>
       prev.map((j) =>
         j.id === jornadaId
-          ? { ...j, estadoCierre: "FINALIZADA" }
+          ? {
+              ...j,
+              estadoCierre: "FINALIZADA" as const,
+              fechaFinalizacion: new Date().toISOString(),
+            }
           : j
       )
     );
@@ -66,14 +76,21 @@ export const useJornada = () => {
     const actualizada = {
       ...jornada,
       estadoCierre: "ABIERTA" as const,
+      fechaReapertura: new Date().toISOString(),
+      reaperturas: (jornada?.reaperturas ?? 0) + 1,
     };
 
-    setJornada(actualizada);
+    setJornada(actualizada as Jornada);
 
     setJornadas((prev) =>
       prev.map((j) =>
         j.id === jornadaId
-          ? { ...j, estadoCierre: "ABIERTA" as const }
+          ? {
+              ...j,
+              estadoCierre: "ABIERTA" as const,
+              fechaReapertura: new Date().toISOString(),
+              reaperturas: (j.reaperturas ?? 0) + 1,
+            }
           : j
       )
     );

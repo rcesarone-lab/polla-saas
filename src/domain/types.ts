@@ -4,6 +4,9 @@ export type Jornada = {
   fecha: string;
   fechaCreacion: string;
   estadoCierre?: "ABIERTA" | "FINALIZADA";
+  fechaFinalizacion?: string;
+  fechaReapertura?: string;
+  reaperturas?: number;
 };
 
 export type Jugada = {

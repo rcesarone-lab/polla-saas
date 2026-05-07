@@ -6,6 +6,8 @@ const KEY_ACTUAL = "jornadaActual";
 
 const NOMBRE_JORNADA = "Polla";
 
+export const getFechaHoy = () => new Date().toISOString().slice(0, 10);
+
 export const getJornadas = (): Jornada[] => {
   return storage.get<Jornada[]>(KEY_LIST, []);
 };
@@ -36,9 +38,12 @@ export const crearJornada = (fecha: string): Jornada => {
     nombre: NOMBRE_JORNADA,
     fecha,
     fechaCreacion: new Date().toISOString(),
+    estadoCierre: "ABIERTA",
+    reaperturas: 0,
   };
 
   const nuevas = [...jornadas, nueva];
+
   saveJornadas(nuevas);
 
   return nueva;
@@ -49,7 +54,11 @@ export const finalizarJornada = (jornadaId: string) => {
 
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
-      ? { ...jornada, estadoCierre: "FINALIZADA" as const }
+      ? {
+          ...jornada,
+          estadoCierre: "FINALIZADA" as const,
+          fechaFinalizacion: new Date().toISOString(),
+        }
       : jornada
   );
 
@@ -61,6 +70,7 @@ export const finalizarJornada = (jornadaId: string) => {
     setJornadaActual({
       ...actual,
       estadoCierre: "FINALIZADA",
+      fechaFinalizacion: new Date().toISOString(),
     });
   }
 };
@@ -70,7 +80,12 @@ export const reabrirJornada = (jornadaId: string) => {
 
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
-      ? { ...jornada, estadoCierre: "ABIERTA" as const }
+      ? {
+          ...jornada,
+          estadoCierre: "ABIERTA" as const,
+          fechaReapertura: new Date().toISOString(),
+          reaperturas: (jornada.reaperturas ?? 0) + 1,
+        }
       : jornada
   );
 
@@ -82,6 +97,8 @@ export const reabrirJornada = (jornadaId: string) => {
     setJornadaActual({
       ...actual,
       estadoCierre: "ABIERTA",
+      fechaReapertura: new Date().toISOString(),
+      reaperturas: (actual.reaperturas ?? 0) + 1,
     });
   }
 };
