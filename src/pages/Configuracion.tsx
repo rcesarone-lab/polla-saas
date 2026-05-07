@@ -10,8 +10,9 @@ import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
 import { obtenerSiguienteDisponible } from "../domain/reasignarCaballo";
 import { getRetiradosByJornada } from "../services/retirados.service";
-import { registrarAuditoria } from "../services/auditoria.service";
 import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
+import { registrarAuditoria } from "../services/auditoria.service";
+
 
 export const Configuracion = () => {
   const { configuracion, updateConfiguracion, deleteConfiguracion } =
@@ -320,6 +321,9 @@ export const Configuracion = () => {
               )}
             </div>
           </form>
+          
+          <AuditoriaPanel jornadaId={jornada.id} maxVisible={3} />
+
         </div>
 
         <div className="card">
@@ -360,9 +364,6 @@ export const Configuracion = () => {
                 : eliminarRetirado
             }
           />
-
-          <AuditoriaPanel jornadaId={jornada.id} />
-
         </div>
       </div>
     </div>

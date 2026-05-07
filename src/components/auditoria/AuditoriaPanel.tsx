@@ -2,19 +2,30 @@ import { getAuditoriaByJornada } from "../../services/auditoria.service";
 
 type Props = {
   jornadaId: string;
+  maxVisible?: number;
+  compact?: boolean;
 };
 
-export const AuditoriaPanel = ({ jornadaId }: Props) => {
-  const eventos = getAuditoriaByJornada(jornadaId).slice(0, 8);
+export const AuditoriaPanel = ({
+  jornadaId,
+  maxVisible = 3,
+  compact = false,
+}: Props) => {
+  const eventos = getAuditoriaByJornada(jornadaId);
 
   return (
-    <div className="card">
-      <h2>Auditoría operacional</h2>
+    <div className={compact ? "audit-card compact" : "audit-card"}>
+      <h3>Auditoría operacional</h3>
 
       {eventos.length === 0 ? (
         <p>No hay eventos registrados.</p>
       ) : (
-        <div className="audit-list">
+        <div
+          className="audit-list scrollable"
+          style={{
+            maxHeight: `${maxVisible * 92}px`,
+          }}
+        >
           {eventos.map((evento) => (
             <div
               key={evento.id}

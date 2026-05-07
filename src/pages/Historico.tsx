@@ -5,6 +5,7 @@ import { useJugadas } from "../hooks/useJugadas";
 import { calcularRanking } from "../domain/scoring";
 import { getResultadoByJornada } from "../services/resultados.service";
 import { getCarrerasByJornada } from "../services/carreras.service";
+import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
 import {
   calcularEstadoJornada,
   calcularProgresoJornada,
@@ -169,62 +170,72 @@ export const Historico = () => {
                       {detalleVisible === jornada.id && (
                         <tr>
                           <td colSpan={12}>
-                            <div className="card">
-                              <h3>Detalle histórico</h3>
+                            <div className="historico-detail-grid">
+                              <div className="card historico-detail-main">
+                                <h3>Detalle histórico</h3>
 
-                              <p>
-                                <strong>Fecha:</strong> {jornada.fecha}
-                              </p>
+                                <p>
+                                  <strong>Fecha:</strong> {jornada.fecha}
+                                </p>
 
-                              <p>
-                                <strong>Estado:</strong>{" "}
-                                {getEstadoJornadaLabel(
-                                  estadoJornada,
-                                  jornada.reaperturas ?? 0
+                                <p>
+                                  <strong>Estado:</strong>{" "}
+                                  {getEstadoJornadaLabel(
+                                    estadoJornada,
+                                    jornada.reaperturas ?? 0
+                                  )}
+                                </p>
+
+                                <p>
+                                  <strong>Progreso:</strong>{" "}
+                                  {progresoJornada.completadas}/
+                                  {progresoJornada.total} carreras (
+                                  {progresoJornada.porcentaje}%)
+                                </p>
+
+                                <p>
+                                  <strong>Finalización:</strong>{" "}
+                                  {jornada.fechaFinalizacion
+                                    ? new Date(
+                                      jornada.fechaFinalizacion
+                                    ).toLocaleString()
+                                    : "-"}
+                                </p>
+
+                                <p>
+                                  <strong>Reaperturas:</strong>{" "}
+                                  {jornada.reaperturas ?? 0}
+                                </p>
+
+                                <p>
+                                  <strong>Pendientes:</strong>{" "}
+                                  {carrerasPendientes.length === 0
+                                    ? "-"
+                                    : carrerasPendientes.join(", ")}
+                                </p>
+
+                                <h4>Ranking completo</h4>
+
+                                {ranking.length === 0 ? (
+                                  <p>No disponible</p>
+                                ) : (
+                                  <ol>
+                                    {ranking.map((r, index) => (
+                                      <li key={`${r.nombre}-${index}`}>
+                                        {r.nombre} → {r.puntos} pts
+                                      </li>
+                                    ))}
+                                  </ol>
                                 )}
-                              </p>
+                              </div>
 
-                              <p>
-                                <strong>Progreso:</strong>{" "}
-                                {progresoJornada.completadas}/
-                                {progresoJornada.total} carreras (
-                                {progresoJornada.porcentaje}%)
-                              </p>
-
-                              <p>
-                                <strong>Finalización:</strong>{" "}
-                                {jornada.fechaFinalizacion
-                                  ? new Date(
-                                    jornada.fechaFinalizacion
-                                  ).toLocaleString()
-                                  : "-"}
-                              </p>
-
-                              <p>
-                                <strong>Reaperturas:</strong>{" "}
-                                {jornada.reaperturas ?? 0}
-                              </p>
-
-                              <p>
-                                <strong>Pendientes:</strong>{" "}
-                                {carrerasPendientes.length === 0
-                                  ? "-"
-                                  : carrerasPendientes.join(", ")}
-                              </p>
-
-                              <h4>Ranking completo</h4>
-
-                              {ranking.length === 0 ? (
-                                <p>No disponible</p>
-                              ) : (
-                                <ol>
-                                  {ranking.map((r, index) => (
-                                    <li key={`${r.nombre}-${index}`}>
-                                      {r.nombre} → {r.puntos} pts
-                                    </li>
-                                  ))}
-                                </ol>
-                              )}
+                              <div className="historico-auditoria-side">
+                                <AuditoriaPanel
+                                  jornadaId={jornada.id}
+                                  maxVisible={4}
+                                  compact
+                                />
+                              </div>
                             </div>
                           </td>
                         </tr>
