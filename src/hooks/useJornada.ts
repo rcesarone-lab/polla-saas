@@ -57,23 +57,25 @@ export const useJornada = () => {
       }[];
     }
   ) => {
+    if (!jornada) return;
+
     finalizarJornada(jornadaId, snapshotFinal);
 
-    const actualizada = {
+    const actualizada: Jornada = {
       ...jornada,
-      estadoCierre: "FINALIZADA" as const,
+      estadoCierre: "FINALIZADA",
       fechaFinalizacion: new Date().toISOString(),
       snapshotFinal,
     };
 
-    setJornada(actualizada as Jornada);
+    setJornada(actualizada);
 
     setJornadas((prev) =>
       prev.map((j) =>
         j.id === jornadaId
           ? {
             ...j,
-            estadoCierre: "FINALIZADA" as const,
+            estadoCierre: "FINALIZADA",
             fechaFinalizacion: new Date().toISOString(),
             snapshotFinal,
           }
@@ -83,16 +85,18 @@ export const useJornada = () => {
   };
 
   const reopenJornada = (jornadaId: string) => {
+    if (!jornada) return;
+
     reabrirJornada(jornadaId);
 
-    const actualizada = {
+    const actualizada: Jornada = {
       ...jornada,
-      estadoCierre: "ABIERTA" as const,
+      estadoCierre: "ABIERTA",
       fechaReapertura: new Date().toISOString(),
-      reaperturas: (jornada?.reaperturas ?? 0) + 1,
+      reaperturas: (jornada.reaperturas ?? 0) + 1,
     };
 
-    setJornada(actualizada as Jornada);
+    setJornada(actualizada);
 
     setJornadas((prev) =>
       prev.map((j) =>

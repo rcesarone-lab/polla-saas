@@ -56,7 +56,7 @@ export const Jugadas = () => {
         jugadasValidadas[carrera.numeroCarrera] =
           validarCaballoJugada(
             caballo,
-            carrera.numeroCarrera as 1 | 2 | 3,
+            carrera.numeroCarrera,
             carreras,
             retirados
           );

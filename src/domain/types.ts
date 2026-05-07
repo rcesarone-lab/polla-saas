@@ -7,12 +7,14 @@ export type Jornada = {
   fechaFinalizacion?: string;
   fechaReapertura?: string;
   reaperturas?: number;
-  snapshot?: { 
-    ganador: string; 
+  snapshotFinal?: {
+    ganador: string;
     puntosGanador: number;
-    ranking: { 
-      nombre: string; 
-      puntos: number }[];
+    ranking: {
+      nombre: string;
+      puntos: number;
+    }[];
+  };
 };
 
 export type Jugada = {

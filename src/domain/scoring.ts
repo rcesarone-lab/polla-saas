@@ -60,3 +60,12 @@ export const calcularPuntaje = (
 ): number => {
   return calcularDetalleDinamico(jugada, resultado).total;
 };
+
+export const calcularRanking = (jugadas: Jugada[], resultado: Resultado) => {
+  return jugadas
+    .map((jugada) => ({
+      nombre: jugada.nombre,
+      puntos: calcularPuntaje(jugada, resultado),
+    }))
+    .sort((a, b) => b.puntos - a.puntos);
+};

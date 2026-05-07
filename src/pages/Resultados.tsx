@@ -4,14 +4,14 @@ import { useJornada } from "../hooks/useJornada";
 import { useResultados } from "../hooks/useResultados";
 import { useCarreras } from "../hooks/useCarreras";
 import { useRetirados } from "../hooks/useRetirados";
+import { useJugadas } from "../hooks/useJugadas";
+import { calcularRanking } from "../domain/scoring";
 import type { Resultado } from "../domain/types";
 import { validarResultado } from "../domain/validarResultado";
 import { calcularEstadoJornada } from "../domain/jornadaStatus";
 
 export const Resultados = () => {
   const { jornada, closeJornada, reopenJornada } = useJornada();
-  import { calcularRanking } from "../domain/scoring";
-  import { useJugadas } from "../hooks/useJugadas";
 
   const { resultado, updateResultado, deleteResultado } = useResultados(
     jornada?.id
