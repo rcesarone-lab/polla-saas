@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Fragment } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useJornada } from "../hooks/useJornada";
 import { useJugadas } from "../hooks/useJugadas";
 import { calcularRanking } from "../domain/scoring";
@@ -17,15 +18,36 @@ import {
 export const Historico = () => {
   const { jornadas, changeJornada } = useJornada();
   const { jugadas } = useJugadas();
+  const [searchParams] = useSearchParams();
 
-  const [detalleVisible, setDetalleVisible] = useState<string | null>(null);
+  const jornadaDesdeUrl = searchParams.get("jornada");
+
+  const [detalleVisible, setDetalleVisible] = useState<string | null>(
+    jornadaDesdeUrl
+  );
+
+  const jornadasOrdenadas = [...jornadas].sort((a, b) =>
+    b.fecha.localeCompare(a.fecha)
+  );
+
+  useEffect(() => {
+    if (!jornadaDesdeUrl) return;
+
+    setDetalleVisible(jornadaDesdeUrl);
+
+    setTimeout(() => {
+      document
+        .getElementById(`jornada-${jornadaDesdeUrl}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  }, [jornadaDesdeUrl]);
 
   return (
     <div>
       <h1>Histórico de jornadas</h1>
 
       <div className="card">
-        {jornadas.length === 0 ? (
+        {jornadasOrdenadas.length === 0 ? (
           <p>No hay jornadas cargadas.</p>
         ) : (
           <div className="table-scroll">
@@ -48,7 +70,7 @@ export const Historico = () => {
               </thead>
 
               <tbody>
-                {jornadas.map((jornada) => {
+                {jornadasOrdenadas.map((jornada) => {
                   const jugadasDeLaJornada = jugadas.filter(
                     (jugada) => jugada.jornadaId === jornada.id
                   );
@@ -87,7 +109,10 @@ export const Historico = () => {
 
                   return (
                     <Fragment key={jornada.id}>
-                      <tr>
+                      <tr id={`jornada-${jornada.id}`}
+                        className={jornadaDesdeUrl === jornada.id ? "historico-row-selected" : ""
+                        }
+                      >
                         <td>{jornada.fecha}</td>
                         <td>{jornada.nombre}</td>
                         <td>{jugadasDeLaJornada.length}</td>

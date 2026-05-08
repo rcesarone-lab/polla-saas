@@ -41,6 +41,9 @@ export const Layout = ({ children }: Props) => {
           <Link style={{ color: "white", textDecoration: "none" }} to="/configuracion">
             Configuración
           </Link>
+          <Link style={{ color: "white", textDecoration: "none" }} to="/admin">
+            Administración
+          </Link>
         </nav>
       </aside>
 
