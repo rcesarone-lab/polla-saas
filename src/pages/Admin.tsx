@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getJornadas } from "../services/jornadas.service";
 import { getJugadas } from "../services/jugadas.service";
 import { getAuditoria } from "../services/auditoria.service";
+import {
+  descargarBackupLocal,
+  importarBackupLocal,
+} from "../services/backup.service";
 import {
   getEstadoJornadaClass,
   getEstadoJornadaLabel,
@@ -13,6 +18,11 @@ export const Admin = () => {
   const jornadas = getJornadas();
   const jugadas = getJugadas();
   const auditoria = getAuditoria();
+
+  const [backupMessage, setBackupMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const jornadasAbiertas = jornadas.filter(
     (jornada) => (jornada.estadoCierre ?? "ABIERTA") === "ABIERTA"
@@ -60,12 +70,12 @@ export const Admin = () => {
     jornadas.length === 0
       ? null
       : [...jornadas]
-          .map((jornada) => ({
-            jornada,
-            total: jugadas.filter((jugada) => jugada.jornadaId === jornada.id)
-              .length,
-          }))
-          .sort((a, b) => b.total - a.total)[0];
+        .map((jornada) => ({
+          jornada,
+          total: jugadas.filter((jugada) => jugada.jornadaId === jornada.id)
+            .length,
+        }))
+        .sort((a, b) => b.total - a.total)[0];
 
   const totalReaperturas = jornadas.reduce(
     (acc, jornada) => acc + (jornada.reaperturas ?? 0),
@@ -77,9 +87,8 @@ export const Admin = () => {
       <h1>Administración</h1>
 
       <div
-        className={`admin-health-card ${
-          tieneAlertas ? "critical" : tieneJornadasReabiertas ? "warning" : "ok"
-        }`}
+        className={`admin-health-card ${tieneAlertas ? "critical" : tieneJornadasReabiertas ? "warning" : "ok"
+          }`}
       >
         <div>
           <span>Estado operativo</span>
@@ -180,6 +189,73 @@ export const Admin = () => {
           <span>Total reaperturas</span>
           <strong>{totalReaperturas}</strong>
         </div>
+      </div>
+
+      <div className="card admin-backup-card">
+        <div>
+          <h2>Backup local</h2>
+          <p>
+            Exporta una copia JSON de jornadas, jugadas, resultados, configuración,
+            retirados y snapshots. La auditoría no se restaura desde el backup; se registra localmente.
+          </p>
+        </div>
+
+        <div className="backup-actions">
+          <button type="button" onClick={descargarBackupLocal}>
+            Exportar backup
+          </button>
+
+          <label className="secondary-button import-backup-button">
+            Importar backup
+            <input
+              type="file"
+              accept="application/json"
+              hidden
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+
+                if (!file) return;
+
+                const confirmar = window.confirm(
+                  "Importar un backup reemplazará los datos actuales guardados en este navegador. ¿Deseas continuar?"
+                );
+
+                if (!confirmar) {
+                  event.target.value = "";
+                  return;
+                }
+
+                try {
+                  await importarBackupLocal(file);
+                  setBackupMessage({
+                    type: "success",
+                    text: "Backup importado correctamente.",
+                  });
+
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1200);
+                } catch (error) {
+                  setBackupMessage({
+                    type: "error",
+                    text:
+                      error instanceof Error
+                        ? error.message
+                        : "No se pudo importar el backup.",
+                  });
+                }
+                event.target.value = "";
+              }}
+            />
+          </label>
+        </div>
+
+        {backupMessage && (
+          <div className={`backup-message ${backupMessage.type}`}>
+            {backupMessage.text}
+          </div>
+        )}
+
       </div>
 
       <div className="admin-section-grid">

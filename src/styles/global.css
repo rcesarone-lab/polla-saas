@@ -745,3 +745,72 @@ h1 {
 .historico-row-selected td {
   font-weight: 600;
 }
+
+.admin-backup-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-backup-card h2 {
+  margin-top: 0;
+  margin-bottom: 0.35rem;
+}
+
+.admin-backup-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+  font-weight: 400;
+}
+
+@media (max-width: 700px) {
+  .admin-backup-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.backup-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.import-backup-button {
+  height: 34px;
+  padding: 0.25rem 0.75rem;
+  margin-right: 10px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.import-backup-button:hover {
+  background: #334155;
+}
+
+.backup-message {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.backup-message.success {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.backup-message.error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
