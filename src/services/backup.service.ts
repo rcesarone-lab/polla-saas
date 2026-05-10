@@ -1,13 +1,14 @@
 import { registrarAuditoria } from "./auditoria.service";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
 const BACKUP_KEYS = [
-  "jornadas",
-  "jornadaActual",
-  "jugadas",
-  "resultados",
-  "carreras",
-  "retirados",
-  "configuracion_puntos",
+  STORAGE_KEYS.JORNADAS,
+  STORAGE_KEYS.JORNADA_ACTUAL,
+  STORAGE_KEYS.JUGADAS,
+  STORAGE_KEYS.RESULTADOS,
+  STORAGE_KEYS.CARRERAS,
+  STORAGE_KEYS.RETIRADOS,
+  STORAGE_KEYS.CONFIGURACION_PUNTOS,
 ];
 
 export const generarBackupLocal = () => {
@@ -56,12 +57,34 @@ export const descargarBackupLocal = () => {
 export const importarBackupLocal = async (file: File) => {
   const contenido = await file.text();
 
-  const backup = JSON.parse(contenido);
+  let backup: {
+    app?: string;
+    version?: string;
+    fecha?: string;
+    data?: Record<string, unknown>;
+  };
+
+  try {
+    backup = JSON.parse(contenido);
+  } catch {
+    throw new Error("El archivo seleccionado no es un JSON válido.");
+  }
+
+  const REQUIRED_KEYS = [
+    STORAGE_KEYS.JORNADAS,
+    STORAGE_KEYS.JUGADAS,
+    STORAGE_KEYS.RESULTADOS,
+  ];
+
+  const tieneClavesMinimas = REQUIRED_KEYS.every((key) =>
+    Object.prototype.hasOwnProperty.call(backup.data, key)
+  );
 
   if (
     !backup?.data ||
     backup.app !== "Polla SaaS" ||
-    backup.version !== "localStorage-v1"
+    backup.version !== "localStorage-v1" ||
+    !tieneClavesMinimas
   ) {
     throw new Error(
       "El archivo no parece ser un backup válido de Polla SaaS."
@@ -83,4 +106,26 @@ export const importarBackupLocal = async (file: File) => {
       "Se importó un backup local y se reemplazaron los datos actuales.",
     severidad: "WARNING",
   });
+};
+
+export const leerMetadataBackup = async (file: File) => {
+  const contenido = await file.text();
+
+  let backup: {
+    app?: string;
+    version?: string;
+    fecha?: string;
+  };
+
+  try {
+    backup = JSON.parse(contenido);
+  } catch {
+    throw new Error("El archivo seleccionado no es un JSON válido.");
+  }
+
+  return {
+    app: backup.app ?? "-",
+    version: backup.version ?? "-",
+    fecha: backup.fecha ?? "-",
+  };
 };

@@ -6,6 +6,7 @@ import { getAuditoria } from "../services/auditoria.service";
 import {
   descargarBackupLocal,
   importarBackupLocal,
+  leerMetadataBackup,
 } from "../services/backup.service";
 import {
   getEstadoJornadaClass,
@@ -23,6 +24,14 @@ export const Admin = () => {
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  const [backupMetadata, setBackupMetadata] = useState<{
+    app: string;
+    version: string;
+    fecha: string;
+  } | null>(null);
+
+  const [isImportingBackup, setIsImportingBackup] = useState(false);
 
   const jornadasAbiertas = jornadas.filter(
     (jornada) => (jornada.estadoCierre ?? "ABIERTA") === "ABIERTA"
@@ -85,6 +94,11 @@ export const Admin = () => {
   return (
     <div>
       <h1>Administración</h1>
+
+      <div className="storage-mode-card">
+        <strong>Modo almacenamiento:</strong>
+        <span>LocalStorage / Prototipo</span>
+      </div>
 
       <div
         className={`admin-health-card ${tieneAlertas ? "critical" : tieneJornadasReabiertas ? "warning" : "ok"
@@ -205,8 +219,11 @@ export const Admin = () => {
             Exportar backup
           </button>
 
-          <label className="secondary-button import-backup-button">
-            Importar backup
+          <label
+            className={`secondary-button import-backup-button ${isImportingBackup ? "disabled" : ""
+              }`}
+          >
+            {isImportingBackup ? "Importando..." : "Importar backup"}
             <input
               type="file"
               accept="application/json"
@@ -215,6 +232,10 @@ export const Admin = () => {
                 const file = event.target.files?.[0];
 
                 if (!file) return;
+
+                const metadata = await leerMetadataBackup(file);
+
+                setBackupMetadata(metadata);
 
                 const confirmar = window.confirm(
                   "Importar un backup reemplazará los datos actuales guardados en este navegador. ¿Deseas continuar?"
@@ -226,16 +247,23 @@ export const Admin = () => {
                 }
 
                 try {
+                  setIsImportingBackup(true);
+
                   await importarBackupLocal(file);
+
                   setBackupMessage({
                     type: "success",
                     text: "Backup importado correctamente.",
                   });
 
+                  setBackupMetadata(null);
+
                   setTimeout(() => {
                     window.location.reload();
                   }, 1200);
                 } catch (error) {
+                  setBackupMetadata(null);
+
                   setBackupMessage({
                     type: "error",
                     text:
@@ -243,12 +271,30 @@ export const Admin = () => {
                         ? error.message
                         : "No se pudo importar el backup.",
                   });
+                } finally {
+                  setIsImportingBackup(false);
                 }
+
                 event.target.value = "";
               }}
             />
           </label>
         </div>
+
+        {backupMetadata && (
+          <div className="backup-metadata-card">
+            <strong>{backupMetadata.app}</strong>
+
+            <span>Versión: {backupMetadata.version}</span>
+
+            <span>
+              Fecha backup:{" "}
+              {backupMetadata.fecha === "-"
+                ? "-"
+                : new Date(backupMetadata.fecha).toLocaleString()}
+            </span>
+          </div>
+        )}
 
         {backupMessage && (
           <div className={`backup-message ${backupMessage.type}`}>

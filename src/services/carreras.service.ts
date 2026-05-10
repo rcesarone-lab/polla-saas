@@ -1,7 +1,8 @@
 import { storage } from "../api/storage";
 import type { CarreraValida } from "../domain/types";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
-const KEY = "carrerasValidas";
+const KEY = STORAGE_KEYS.CARRERAS;
 
 export const getCarrerasValidas = (): CarreraValida[] => {
   return storage.get<CarreraValida[]>(KEY, []);

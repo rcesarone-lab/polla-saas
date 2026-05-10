@@ -1,9 +1,10 @@
 import type { Jornada } from "../domain/types";
 import { storage } from "../api/storage";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 import { registrarAuditoria } from "./auditoria.service";
 
-const KEY_LIST = "jornadas";
-const KEY_ACTUAL = "jornadaActual";
+const KEY_LIST = STORAGE_KEYS.JORNADAS;
+const KEY_ACTUAL = STORAGE_KEYS.JORNADA_ACTUAL;
 
 const NOMBRE_JORNADA = "Polla";
 
@@ -18,7 +19,19 @@ export const saveJornadas = (jornadas: Jornada[]) => {
 };
 
 export const getJornadaActual = (): Jornada | null => {
-  return storage.get<Jornada | null>(KEY_ACTUAL, null);
+  const jornadas = getJornadas();
+
+  const raw = storage.get<string | Jornada | null>(KEY_ACTUAL, null);
+
+  if (!raw) {
+    return null;
+  }
+
+  if (typeof raw === "string") {
+    return jornadas.find((jornada) => jornada.id === raw) ?? null;
+  }
+
+  return jornadas.find((jornada) => jornada.id === raw.id) ?? raw;
 };
 
 export const setJornadaActual = (jornada: Jornada) => {
@@ -43,15 +56,14 @@ export const crearJornada = (fecha: string): Jornada => {
     reaperturas: 0,
   };
 
-  const nuevas = [...jornadas, nueva];
-
-  saveJornadas(nuevas);
+  saveJornadas([...jornadas, nueva]);
+  setJornadaActual(nueva);
 
   registrarAuditoria({
-    jornadaId,
-    accion: "FINALIZAR_JORNADA",
-    descripcion: "La jornada fue finalizada y se generó snapshot histórico.",
-    severidad: "CRITICAL",
+    jornadaId: nueva.id,
+    accion: "CREAR_JORNADA",
+    descripcion: `Se creó la jornada ${fecha}.`,
+    severidad: "INFO",
   });
 
   return nueva;
@@ -69,19 +81,28 @@ export const finalizarJornada = (
   }
 ) => {
   const jornadas = getJornadas();
+  const fechaFinalizacion = new Date().toISOString();
 
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
       ? {
-        ...jornada,
-        estadoCierre: "FINALIZADA" as const,
-        fechaFinalizacion: new Date().toISOString(),
-        snapshotFinal,
-      }
+          ...jornada,
+          estadoCierre: "FINALIZADA" as const,
+          fechaFinalizacion,
+          snapshotFinal,
+        }
       : jornada
   );
 
   saveJornadas(nuevas);
+
+  const actualizada = nuevas.find((jornada) => jornada.id === jornadaId);
+
+  const actual = getJornadaActual();
+
+  if (actual?.id === jornadaId && actualizada) {
+    setJornadaActual(actualizada);
+  }
 
   registrarAuditoria({
     jornadaId,
@@ -89,34 +110,32 @@ export const finalizarJornada = (
     descripcion: "La jornada fue finalizada y se generó snapshot histórico.",
     severidad: "CRITICAL",
   });
-
-  const actual = getJornadaActual();
-
-  if (actual?.id === jornadaId) {
-    setJornadaActual({
-      ...actual,
-      estadoCierre: "FINALIZADA",
-      fechaFinalizacion: new Date().toISOString(),
-      snapshotFinal,
-    });
-  }
 };
 
 export const reabrirJornada = (jornadaId: string) => {
   const jornadas = getJornadas();
+  const fechaReapertura = new Date().toISOString();
 
   const nuevas = jornadas.map((jornada) =>
     jornada.id === jornadaId
       ? {
-        ...jornada,
-        estadoCierre: "ABIERTA" as const,
-        fechaReapertura: new Date().toISOString(),
-        reaperturas: (jornada.reaperturas ?? 0) + 1,
-      }
+          ...jornada,
+          estadoCierre: "ABIERTA" as const,
+          fechaReapertura,
+          reaperturas: (jornada.reaperturas ?? 0) + 1,
+        }
       : jornada
   );
 
   saveJornadas(nuevas);
+
+  const actualizada = nuevas.find((jornada) => jornada.id === jornadaId);
+
+  const actual = getJornadaActual();
+
+  if (actual?.id === jornadaId && actualizada) {
+    setJornadaActual(actualizada);
+  }
 
   registrarAuditoria({
     jornadaId,
@@ -124,15 +143,4 @@ export const reabrirJornada = (jornadaId: string) => {
     descripcion: "La jornada fue reabierta para permitir nuevas modificaciones.",
     severidad: "WARNING",
   });
-
-  const actual = getJornadaActual();
-
-  if (actual?.id === jornadaId) {
-    setJornadaActual({
-      ...actual,
-      estadoCierre: "ABIERTA",
-      fechaReapertura: new Date().toISOString(),
-      reaperturas: (actual.reaperturas ?? 0) + 1,
-    });
-  }
 };

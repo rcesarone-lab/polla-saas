@@ -1,7 +1,8 @@
 import { storage } from "../api/storage";
 import type { AuditoriaEvento } from "../domain/types";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
-const KEY = "auditoria_eventos";
+const KEY = STORAGE_KEYS.AUDITORIA_EVENTOS;
 
 export const getAuditoria = (): AuditoriaEvento[] => {
   return storage.get<AuditoriaEvento[]>(KEY, []);

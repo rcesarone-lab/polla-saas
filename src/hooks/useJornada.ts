@@ -15,7 +15,9 @@ export const useJornada = () => {
   const [jornadas, setJornadas] = useState<Jornada[]>([]);
 
   useEffect(() => {
-    const lista = getJornadas();
+    const lista = getJornadas().sort((a, b) =>
+      b.fecha.localeCompare(a.fecha)
+    );
 
     setJornadas(lista);
 
@@ -23,12 +25,31 @@ export const useJornada = () => {
 
     if (actual) {
       setJornada(actual);
+      return;
+    }
+
+    const fallback = lista[0] ?? null;
+
+    if (fallback) {
+      setJornada(fallback);
+      setJornadaActual(fallback);
     }
   }, []);
 
+  const refreshJornadas = () => {
+    const lista = getJornadas().sort((a, b) =>
+      b.fecha.localeCompare(a.fecha)
+    );
+
+    setJornadas(lista);
+
+    return lista;
+  };
+
   const changeJornada = (id: string) => {
-    const seleccionada =
-      jornadas.find((j) => j.id === id) ?? null;
+    const lista = refreshJornadas();
+
+    const seleccionada = lista.find((j) => j.id === id) ?? null;
 
     if (!seleccionada) return;
 
@@ -39,11 +60,12 @@ export const useJornada = () => {
   const addJornada = (fecha: string) => {
     const nueva = crearJornada(fecha);
 
-    const nuevas = [...jornadas, nueva];
+    const lista = refreshJornadas();
 
-    setJornadas(nuevas);
-    setJornada(nueva);
-    setJornadaActual(nueva);
+    const creada = lista.find((j) => j.id === nueva.id) ?? nueva;
+
+    setJornada(creada);
+    setJornadaActual(creada);
   };
 
   const closeJornada = (
@@ -57,59 +79,29 @@ export const useJornada = () => {
       }[];
     }
   ) => {
-    if (!jornada) return;
-
     finalizarJornada(jornadaId, snapshotFinal);
 
-    const actualizada: Jornada = {
-      ...jornada,
-      estadoCierre: "FINALIZADA",
-      fechaFinalizacion: new Date().toISOString(),
-      snapshotFinal,
-    };
+    const lista = refreshJornadas();
 
-    setJornada(actualizada);
+    const actualizada = lista.find((j) => j.id === jornadaId) ?? null;
 
-    setJornadas((prev) =>
-      prev.map((j) =>
-        j.id === jornadaId
-          ? {
-            ...j,
-            estadoCierre: "FINALIZADA",
-            fechaFinalizacion: new Date().toISOString(),
-            snapshotFinal,
-          }
-          : j
-      )
-    );
+    if (actualizada) {
+      setJornada(actualizada);
+      setJornadaActual(actualizada);
+    }
   };
 
   const reopenJornada = (jornadaId: string) => {
-    if (!jornada) return;
-
     reabrirJornada(jornadaId);
 
-    const actualizada: Jornada = {
-      ...jornada,
-      estadoCierre: "ABIERTA",
-      fechaReapertura: new Date().toISOString(),
-      reaperturas: (jornada.reaperturas ?? 0) + 1,
-    };
+    const lista = refreshJornadas();
 
-    setJornada(actualizada);
+    const actualizada = lista.find((j) => j.id === jornadaId) ?? null;
 
-    setJornadas((prev) =>
-      prev.map((j) =>
-        j.id === jornadaId
-          ? {
-            ...j,
-            estadoCierre: "ABIERTA" as const,
-            fechaReapertura: new Date().toISOString(),
-            reaperturas: (j.reaperturas ?? 0) + 1,
-          }
-          : j
-      )
-    );
+    if (actualizada) {
+      setJornada(actualizada);
+      setJornadaActual(actualizada);
+    }
   };
 
   return {

@@ -1,7 +1,8 @@
 import { storage } from "../api/storage";
 import type { ConfiguracionPuntos } from "../domain/types";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
-const KEY = "configuracionPuntos";
+const KEY = STORAGE_KEYS.CONFIGURACION_PUNTOS;
 
 export const getConfiguracionPuntos = (): ConfiguracionPuntos | null => {
   return storage.get<ConfiguracionPuntos | null>(KEY, null);

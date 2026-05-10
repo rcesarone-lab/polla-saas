@@ -1,7 +1,8 @@
 import { storage } from "../api/storage";
 import type { Retirado } from "../domain/types";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
-const KEY = "retirados";
+const KEY = STORAGE_KEYS.RETIRADOS;
 
 export const getRetirados = (): Retirado[] => {
   return storage.get<Retirado[]>(KEY, []);

@@ -1,7 +1,8 @@
 import type { Resultado } from "../domain/types";
 import { storage } from "../api/storage";
+import { STORAGE_KEYS } from "../storage/storage.keys";
 
-const KEY = "resultados";
+const KEY = STORAGE_KEYS.RESULTADOS;
 
 export const getResultados = (): Resultado[] => {
   return storage.get<Resultado[]>(KEY, []);

@@ -8,6 +8,12 @@ import { getResultadoByJornada } from "../services/resultados.service";
 import { getCarrerasByJornada } from "../services/carreras.service";
 import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
 import {
+  exportarHistoricoCSV,
+  exportarJugadasJornadaCSV,
+  exportarRankingJornadaCSV,
+  exportarResultadosJornadaCSV,
+} from "../services/export.service";
+import {
   calcularEstadoJornada,
   calcularProgresoJornada,
   getCarrerasPendientes,
@@ -44,7 +50,74 @@ export const Historico = () => {
 
   return (
     <div>
-      <h1>Histórico de jornadas</h1>
+      <div className="page-header-actions">
+        <h1>Histórico de jornadas</h1>
+
+        <button
+          type="button"
+          className="secondary-button"
+          disabled={jornadasOrdenadas.length === 0}
+          onClick={() => {
+            const historicoExport = jornadasOrdenadas.map((jornada) => {
+              const jugadasDeLaJornada = jugadas.filter(
+                (jugada) => jugada.jornadaId === jornada.id
+              );
+
+              const resultado = getResultadoByJornada(jornada.id);
+              const carrerasDeLaJornada = getCarrerasByJornada(jornada.id);
+
+              const estadoJornada = calcularEstadoJornada(
+                carrerasDeLaJornada,
+                resultado,
+                jornada.estadoCierre === "FINALIZADA"
+              );
+
+              const ranking =
+                jornada.snapshotFinal?.ranking ??
+                (resultado
+                  ? calcularRanking(jugadasDeLaJornada, resultado)
+                  : []);
+
+              const ganador = jornada.snapshotFinal
+                ? {
+                  nombre: jornada.snapshotFinal.ganador,
+                  puntos: jornada.snapshotFinal.puntosGanador,
+                }
+                : ranking[0];
+
+              return {
+                fecha: jornada.fecha,
+                nombre: jornada.nombre,
+                estado: getEstadoJornadaLabel(
+                  estadoJornada,
+                  jornada.reaperturas ?? 0
+                ),
+                totalJugadas: jugadasDeLaJornada.length,
+                ganador: ganador ? ganador.nombre : "-",
+                puntosGanador: ganador ? ganador.puntos : "-",
+                top3:
+                  ranking.length === 0
+                    ? "-"
+                    : ranking
+                      .slice(0, 3)
+                      .map(
+                        (r, index) =>
+                          `${index + 1}. ${r.nombre} (${r.puntos})`
+                      )
+                      .join(" | "),
+                reaperturas: jornada.reaperturas ?? 0,
+                fechaFinalizacion: jornada.fechaFinalizacion
+                  ? new Date(jornada.fechaFinalizacion).toLocaleString()
+                  : "-",
+              };
+            });
+
+            exportarHistoricoCSV(historicoExport);
+          }}
+        >
+          Exportar histórico CSV
+        </button>
+      </div>
 
       <div className="card">
         {jornadasOrdenadas.length === 0 ? (
@@ -109,8 +182,12 @@ export const Historico = () => {
 
                   return (
                     <Fragment key={jornada.id}>
-                      <tr id={`jornada-${jornada.id}`}
-                        className={jornadaDesdeUrl === jornada.id ? "historico-row-selected" : ""
+                      <tr
+                        id={`jornada-${jornada.id}`}
+                        className={
+                          jornadaDesdeUrl === jornada.id
+                            ? "historico-row-selected"
+                            : ""
                         }
                       >
                         <td>{jornada.fecha}</td>
@@ -197,7 +274,74 @@ export const Historico = () => {
                           <td colSpan={12}>
                             <div className="historico-detail-grid">
                               <div className="card historico-detail-main">
-                                <h3>Detalle histórico</h3>
+                                <div className="historico-detail-header">
+                                  <h3>Detalle histórico</h3>
+
+                                  <div className="historico-export-actions">
+                                    <button
+                                      type="button"
+                                      className="secondary-button"
+                                      disabled={ranking.length === 0}
+                                      onClick={() =>
+                                        exportarRankingJornadaCSV({
+                                          jornadaId: jornada.id,
+                                          fecha: jornada.fecha,
+                                          ranking,
+                                        })
+                                      }
+                                    >
+                                      Exportar ranking CSV
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      className="secondary-button"
+                                      disabled={jugadasDeLaJornada.length === 0}
+                                      onClick={() =>
+                                        exportarJugadasJornadaCSV({
+                                          jornadaId: jornada.id,
+                                          fecha: jornada.fecha,
+                                          carreras: carrerasDeLaJornada.map(
+                                            (carrera) => carrera.numeroCarrera
+                                          ),
+                                          jugadas: jugadasDeLaJornada.map((jugada) => ({
+                                            participante: jugada.nombre,
+                                            jugadas: jugada.jugadas,
+                                            puntos: resultado ? calcularRanking([jugada], resultado)[0]?.puntos ?? 0 : 0,
+                                          })),
+                                        })
+                                      }
+                                    >
+                                      Exportar jugadas CSV
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      className="secondary-button"
+                                      disabled={!resultado}
+                                      onClick={() =>
+                                        resultado &&
+                                        exportarResultadosJornadaCSV({
+                                          jornadaId: jornada.id,
+                                          fecha: jornada.fecha,
+                                          resultados: carrerasDeLaJornada.map((carrera) => {
+                                            const resultadoCarrera =
+                                              resultado.resultados[carrera.numeroCarrera];
+
+                                            return {
+                                              carrera: carrera.numeroCarrera,
+                                              primero: resultadoCarrera?.primero ?? null,
+                                              segundo: resultadoCarrera?.segundo ?? null,
+                                              tercero: resultadoCarrera?.tercero ?? null,
+                                            };
+                                          }),
+                                        })
+                                      }
+                                    >
+                                      Exportar resultados CSV
+                                    </button>
+                                  </div>
+                                </div>
 
                                 <p>
                                   <strong>Fecha:</strong> {jornada.fecha}
