@@ -66,10 +66,10 @@ export const Operacion = () => {
 
   const estadoJornada = jornada
     ? calcularEstadoJornada(
-        carreras,
-        resultado,
-        jornada.estadoCierre === "FINALIZADA"
-      )
+      carreras,
+      resultado,
+      jornada.estadoCierre === "FINALIZADA"
+    )
     : "ABIERTA";
 
   const progresoJornada = calcularProgresoJornada(carreras, resultado);
@@ -171,9 +171,8 @@ export const Operacion = () => {
 
         <div className="operacion-actions">
           <label
-            className={`secondary-button import-jornada-button ${
-              isImportingJornada ? "disabled" : ""
-            }`}
+            className={`secondary-button import-jornada-button ${isImportingJornada ? "disabled" : ""
+              }`}
           >
             {isImportingJornada ? "Importando..." : "Importar jornada"}
 
@@ -260,9 +259,8 @@ export const Operacion = () => {
         </button>
 
         <label
-          className={`secondary-button import-jornada-button ${
-            isImportingJornada ? "disabled" : ""
-          }`}
+          className={`secondary-button import-jornada-button ${isImportingJornada ? "disabled" : ""
+            }`}
         >
           {isImportingJornada ? "Importando..." : "Importar jornada"}
 
@@ -529,7 +527,9 @@ export const Operacion = () => {
                           <td>{carrera.numeroCarrera}</td>
 
                           <td>
-                            {completa ? (
+                            {jornada.estadoCierre === "FINALIZADA" ? (
+                              <span className="status-ok">Finalizada</span>
+                            ) : completa ? (
                               <span className="status-ok">Completa</span>
                             ) : (
                               <span className="status-warn">Pendiente</span>

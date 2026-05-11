@@ -27,16 +27,16 @@ const toNumberOrNull = (value: string): number | null => {
 const carreraCompleta = (
   resultadoCarrera:
     | {
-        primero: number | null;
-        segundo: number | null;
-        tercero: number | null;
-      }
+      primero: number | null;
+      segundo: number | null;
+      tercero: number | null;
+    }
     | undefined
 ) =>
   Boolean(
     resultadoCarrera?.primero &&
-      resultadoCarrera?.segundo &&
-      resultadoCarrera?.tercero
+    resultadoCarrera?.segundo &&
+    resultadoCarrera?.tercero
   );
 
 export const ResultadoForm = ({
@@ -107,13 +107,9 @@ export const ResultadoForm = ({
 
   if (!siguienteCarrera) {
     return (
-      <div className="resultado-sequential-layout">
-        <div className="resultado-ready-box">
-          <strong>Resultados completos</strong>
-          <p>Todas las carreras configuradas ya tienen resultado cargado.</p>
-        </div>
-
-        <ResultadoCargadoTable carreras={carrerasOrdenadas} resultado={resultado} />
+      <div className="resultado-ready-box">
+        <strong>Resultados completos</strong>
+        <p>Todas las carreras configuradas ya tienen resultado cargado.</p>
       </div>
     );
   }
@@ -192,64 +188,6 @@ export const ResultadoForm = ({
           <p className="status-ok">Jornada finalizada: resultados bloqueados.</p>
         )}
       </form>
-
-      <ResultadoCargadoTable carreras={carrerasOrdenadas} resultado={resultado} />
-    </div>
-  );
-};
-
-const ResultadoCargadoTable = ({
-  carreras,
-  resultado,
-}: {
-  carreras: CarreraValida[];
-  resultado: Resultado | null;
-}) => {
-  const carrerasConResultado = carreras.filter((carrera) =>
-    carreraCompleta(resultado?.resultados[carrera.numeroCarrera])
-  );
-
-  if (carrerasConResultado.length === 0) {
-    return (
-      <EmptyState
-        title="Sin resultados cargados"
-        description="A medida que cargues resultados, aparecerán aquí en orden de carrera."
-      />
-    );
-  }
-
-  return (
-    <div className="resultado-loaded-card">
-      <h2>Resultados cargados</h2>
-
-      <div className="table-fit">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Carrera</th>
-              <th>1er lugar</th>
-              <th>2do lugar</th>
-              <th>3er lugar</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {carrerasConResultado.map((carrera) => {
-              const numero = carrera.numeroCarrera;
-              const resultadoCarrera = resultado?.resultados[numero];
-
-              return (
-                <tr key={carrera.id}>
-                  <td>Carrera {numero}</td>
-                  <td>{resultadoCarrera?.primero ?? "-"}</td>
-                  <td>{resultadoCarrera?.segundo ?? "-"}</td>
-                  <td>{resultadoCarrera?.tercero ?? "-"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 };

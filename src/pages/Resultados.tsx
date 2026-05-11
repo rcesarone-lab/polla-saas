@@ -215,13 +215,20 @@ export const Resultados = () => {
           </div>
         </div>
 
-        <ResultadoForm
-          resultado={resultado}
-          jornadaId={jornada.id}
-          carreras={carreras}
-          disabled={jornadaFinalizada}
-          onSave={handleSaveResultado}
-        />
+        {jornadaFinalizada ? (
+          <EmptyState
+            title="Resultados bloqueados"
+            description="La jornada está finalizada. No se muestran campos de carga para evitar edición accidental."
+          />
+        ) : (
+          <ResultadoForm
+            resultado={resultado}
+            jornadaId={jornada.id}
+            carreras={carreras}
+            disabled={jornadaFinalizada}
+            onSave={handleSaveResultado}
+          />
+        )}
 
         {resultado && !jornadaFinalizada && (
           <button

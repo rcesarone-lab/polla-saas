@@ -5,8 +5,6 @@ import { JornadaStatusCard } from "../components/jornada/JornadaStatusCard";
 import { EmptyState } from "../components/ui/EmptyState";
 import { JugadaForm } from "../components/jugadas/JugadaForm";
 import { JugadaList } from "../components/jugadas/JugadaList";
-import { Ranking } from "../components/jugadas/Ranking";
-
 import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
 import { useJornada } from "../hooks/useJornada";
@@ -62,7 +60,7 @@ export const Jugadas = () => {
         j.jornadaId === jornada.id &&
         j.id !== jugadaEditando?.id &&
         j.nombre.toLowerCase() ===
-          data.nombre.trim().toLowerCase()
+        data.nombre.trim().toLowerCase()
     );
 
     if (existeNombre) {
@@ -194,42 +192,29 @@ export const Jugadas = () => {
             </div>
           </div>
 
-          <div className="operacion-grid">
-            <div className="card">
-              <h2>
-                {jugadaEditando
-                  ? "Editar jugada"
-                  : "Nueva jugada"}
-              </h2>
+          <div className="card">
+            <h2>
+              {jugadaEditando ? "Editar jugada" : "Nueva jugada"}
+            </h2>
 
-              {carreras.length === 0 ? (
-                <EmptyState
-                  title="Sin carreras válidas"
-                  description="Configura las carreras antes de registrar jugadas."
-                />
-              ) : jornadaFinalizada ? (
-                <EmptyState
-                  title="Jornada finalizada"
-                  description="La jornada está cerrada y no admite modificaciones."
-                />
-              ) : (
-                <JugadaForm
-                  jugadaEditando={jugadaEditando}
-                  carreras={carreras}
-                  onSubmit={handleSubmitJugada}
-                  onCancelEdit={() =>
-                    setJugadaEditando(null)
-                  }
-                />
-              )}
-            </div>
-
-            <div className="card">
-              <Ranking
-                jugadas={jugadasDeLaJornada}
-                resultado={resultado}
+            {carreras.length === 0 ? (
+              <EmptyState
+                title="Sin carreras válidas"
+                description="Configura las carreras antes de registrar jugadas."
               />
-            </div>
+            ) : jornadaFinalizada ? (
+              <EmptyState
+                title="Jornada finalizada"
+                description="La jornada está cerrada y no admite modificaciones."
+              />
+            ) : (
+              <JugadaForm
+                jugadaEditando={jugadaEditando}
+                carreras={carreras}
+                onSubmit={handleSubmitJugada}
+                onCancelEdit={() => setJugadaEditando(null)}
+              />
+            )}
           </div>
 
           <div className="card">
@@ -251,15 +236,15 @@ export const Jugadas = () => {
                 jornadaFinalizada
                   ? undefined
                   : (jugada) => {
-                      setJugadaEditando(jugada);
-                    }
+                    setJugadaEditando(jugada);
+                  }
               }
               onDelete={
                 jornadaFinalizada
                   ? undefined
                   : (id) => {
-                      deleteJugada(id);
-                    }
+                    deleteJugada(id);
+                  }
               }
             />
           </div>

@@ -114,11 +114,6 @@ export const Admin = () => {
                 : "No se detectan alertas críticas en la operación actual."}
           </p>
         </div>
-
-        <div className="storage-mode-card admin-storage-card">
-          <strong>Storage:</strong>
-          <span>LocalStorage / Prototipo</span>
-        </div>
       </div>
 
       <div className="admin-compact-kpi-grid">
