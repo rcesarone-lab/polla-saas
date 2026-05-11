@@ -44,8 +44,7 @@ export const Admin = () => {
   );
 
   const jornadasReabiertas = jornadas.filter(
-    (jornada) =>
-      jornada.estadoCierre === "REABIERTA" || (jornada.reaperturas ?? 0) > 0
+    (jornada) => (jornada.reaperturas ?? 0) > 0
   );
 
   const alertasCriticas = auditoria

@@ -8,9 +8,7 @@ import { KpiCard } from "../components/dashboard/KpiCard";
 import {
   calcularEstadoJornada,
   calcularProgresoJornada,
-  getEstadoJornadaClass,
   getEstadoJornadaLabel,
-  getCarrerasCompletas,
   getCarrerasPendientes,
 } from "../domain/jornadaStatus";
 
@@ -37,8 +35,6 @@ export const Dashboard = () => {
   const estadoJornada = calcularEstadoJornada(carreras, resultado);
 
   const progresoJornada = calcularProgresoJornada(carreras, resultado);
-
-  const carrerasCompletas = getCarrerasCompletas(carreras, resultado);
 
   const carrerasPendientes = getCarrerasPendientes(carreras, resultado);
 
