@@ -1,5 +1,6 @@
 import type { Jugada, Resultado } from "../../domain/types";
 import { calcularPuntaje } from "../../domain/scoring";
+import { EmptyState } from "../ui/EmptyState";
 
 type Props = {
   jugadas: Jugada[];
@@ -8,7 +9,12 @@ type Props = {
 
 export const Ranking = ({ jugadas, resultado }: Props) => {
   if (!resultado) {
-    return <p>No hay resultados cargados</p>;
+    return (
+      <EmptyState
+        title="Ranking no disponible"
+        description="El ranking aparecerá cuando existan resultados cargados."
+      />
+    );
   }
 
   const ranking = [...jugadas]
@@ -19,17 +25,24 @@ export const Ranking = ({ jugadas, resultado }: Props) => {
     .sort((a, b) => b.puntos - a.puntos);
 
   if (ranking.length === 0) {
-    return <p>No hay jugadas cargadas.</p>;
+    return (
+      <EmptyState
+        title="Sin jugadas cargadas"
+        description="Carga participantes para calcular el ranking."
+      />
+    );
   }
 
   return (
     <div>
       <h2>Ranking</h2>
 
-      <ol>
+      <ol className="dashboard-top-list">
         {ranking.map((item, index) => (
           <li key={`${item.nombre}-${index}`}>
-            {item.nombre} → <strong>{item.puntos} puntos</strong>
+            <span>{index + 1}</span>
+            <strong>{item.nombre}</strong>
+            <em>{item.puntos} pts</em>
           </li>
         ))}
       </ol>

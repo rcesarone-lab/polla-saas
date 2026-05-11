@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CarreraValida, Resultado } from "../../domain/types";
+import { EmptyState } from "../ui/EmptyState";
 
 type ResultadoInput = {
   primero: string;
@@ -23,6 +24,21 @@ const toNumberOrNull = (value: string): number | null => {
   return Number(value);
 };
 
+const carreraCompleta = (
+  resultadoCarrera:
+    | {
+        primero: number | null;
+        segundo: number | null;
+        tercero: number | null;
+      }
+    | undefined
+) =>
+  Boolean(
+    resultadoCarrera?.primero &&
+      resultadoCarrera?.segundo &&
+      resultadoCarrera?.tercero
+  );
+
 export const ResultadoForm = ({
   resultado,
   jornadaId,
@@ -30,145 +46,210 @@ export const ResultadoForm = ({
   disabled = false,
   onSave,
 }: Props) => {
-  const [resultados, setResultados] = useState<Record<number, ResultadoInput>>(
-    {}
+  const carrerasOrdenadas = useMemo(
+    () => [...carreras].sort((a, b) => a.numeroCarrera - b.numeroCarrera),
+    [carreras]
   );
 
+  const siguienteCarrera = carrerasOrdenadas.find(
+    (carrera) => !carreraCompleta(resultado?.resultados[carrera.numeroCarrera])
+  );
+
+  const [form, setForm] = useState<ResultadoInput>({
+    primero: "",
+    segundo: "",
+    tercero: "",
+  });
+
   useEffect(() => {
-    const nuevosResultados: Record<number, ResultadoInput> = {};
+    if (!siguienteCarrera) return;
 
-    carreras.forEach((carrera) => {
-      const numero = carrera.numeroCarrera;
-      const resultadoCarrera = resultado?.resultados[numero];
+    const resultadoCarrera =
+      resultado?.resultados[siguienteCarrera.numeroCarrera];
 
-      nuevosResultados[numero] = {
-        primero: toInputValue(resultadoCarrera?.primero),
-        segundo: toInputValue(resultadoCarrera?.segundo),
-        tercero: toInputValue(resultadoCarrera?.tercero),
-      };
+    setForm({
+      primero: toInputValue(resultadoCarrera?.primero),
+      segundo: toInputValue(resultadoCarrera?.segundo),
+      tercero: toInputValue(resultadoCarrera?.tercero),
     });
-
-    setResultados(nuevosResultados);
-  }, [resultado, carreras]);
-
-  const updateCampo = (
-    numeroCarrera: number,
-    campo: keyof ResultadoInput,
-    valor: string
-  ) => {
-    setResultados((prev) => ({
-      ...prev,
-      [numeroCarrera]: {
-        ...prev[numeroCarrera],
-        [campo]: valor,
-      },
-    }));
-  };
+  }, [resultado, siguienteCarrera]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!onSave) return;
+    if (!onSave || !siguienteCarrera) return;
+
+    const numero = siguienteCarrera.numeroCarrera;
 
     const nuevoResultado: Resultado = {
       jornadaId,
-      resultados: {},
+      resultados: {
+        ...(resultado?.resultados ?? {}),
+        [numero]: {
+          primero: toNumberOrNull(form.primero),
+          segundo: toNumberOrNull(form.segundo),
+          tercero: toNumberOrNull(form.tercero),
+        },
+      },
     };
-
-    for (const carrera of carreras) {
-      const numero = carrera.numeroCarrera;
-
-      const valores = resultados[numero];
-
-      if (!valores) continue;
-
-      nuevoResultado.resultados[numero] = {
-        primero: toNumberOrNull(valores.primero),
-        segundo: toNumberOrNull(valores.segundo),
-        tercero: toNumberOrNull(valores.tercero),
-      };
-    }
 
     onSave(nuevoResultado);
   };
 
-  if (carreras.length === 0) {
+  if (carrerasOrdenadas.length === 0) {
     return (
-      <p>
-        No hay carreras válidas configuradas. Primero debes cargarlas en
-        Configuración.
-      </p>
+      <EmptyState
+        title="Sin carreras configuradas"
+        description="Primero configura las carreras válidas de la jornada."
+      />
+    );
+  }
+
+  if (!siguienteCarrera) {
+    return (
+      <div className="resultado-sequential-layout">
+        <div className="resultado-ready-box">
+          <strong>Resultados completos</strong>
+          <p>Todas las carreras configuradas ya tienen resultado cargado.</p>
+        </div>
+
+        <ResultadoCargadoTable carreras={carrerasOrdenadas} resultado={resultado} />
+      </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="compact-form">
-      {carreras.map((carrera) => {
-        const numero = carrera.numeroCarrera;
-
-        const valores = resultados[numero] ?? {
-          primero: "",
-          segundo: "",
-          tercero: "",
-        };
-
-        return (
-          <div key={carrera.id} className="card">
-            <h2>Carrera {numero}</h2>
-
-            <div className="compact-fields-3">
-              <div className="form-field">
-                <label>1er lugar</label>
-
-                <input
-                  type="number"
-                  disabled={disabled}
-                  value={valores.primero}
-                  onChange={(e) =>
-                    updateCampo(numero, "primero", e.target.value)
-                  }
-                />
-              </div>
-
-              <div className="form-field">
-                <label>2do lugar</label>
-
-                <input
-                  type="number"
-                  disabled={disabled}
-                  value={valores.segundo}
-                  onChange={(e) =>
-                    updateCampo(numero, "segundo", e.target.value)
-                  }
-                />
-              </div>
-
-              <div className="form-field">
-                <label>3er lugar</label>
-
-                <input
-                  type="number"
-                  disabled={disabled}
-                  value={valores.tercero}
-                  onChange={(e) =>
-                    updateCampo(numero, "tercero", e.target.value)
-                  }
-                />
-              </div>
-            </div>
+    <div className="resultado-sequential-layout">
+      <form onSubmit={handleSubmit} className="resultado-current-card">
+        <div className="resultado-current-header">
+          <div>
+            <span>Carrera a cargar</span>
+            <strong>Carrera {siguienteCarrera.numeroCarrera}</strong>
           </div>
-        );
-      })}
 
-      {!disabled && onSave && (
-        <button type="submit">Guardar / actualizar resultados</button>
-      )}
+          <em>{disabled ? "Bloqueada" : "Editable"}</em>
+        </div>
 
-      {disabled && (
-        <p className="status-ok">
-          Jornada finalizada: resultados bloqueados.
-        </p>
-      )}
-    </form>
+        <div className="compact-fields-3">
+          <div className="form-field">
+            <label>1er lugar</label>
+
+            <input
+              type="number"
+              disabled={disabled}
+              value={form.primero}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  primero: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>2do lugar</label>
+
+            <input
+              type="number"
+              disabled={disabled}
+              value={form.segundo}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  segundo: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div className="form-field">
+            <label>3er lugar</label>
+
+            <input
+              type="number"
+              disabled={disabled}
+              value={form.tercero}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  tercero: e.target.value,
+                }))
+              }
+            />
+          </div>
+        </div>
+
+        {!disabled && onSave && (
+          <div className="form-actions">
+            <button type="submit">
+              Guardar resultado carrera {siguienteCarrera.numeroCarrera}
+            </button>
+          </div>
+        )}
+
+        {disabled && (
+          <p className="status-ok">Jornada finalizada: resultados bloqueados.</p>
+        )}
+      </form>
+
+      <ResultadoCargadoTable carreras={carrerasOrdenadas} resultado={resultado} />
+    </div>
+  );
+};
+
+const ResultadoCargadoTable = ({
+  carreras,
+  resultado,
+}: {
+  carreras: CarreraValida[];
+  resultado: Resultado | null;
+}) => {
+  const carrerasConResultado = carreras.filter((carrera) =>
+    carreraCompleta(resultado?.resultados[carrera.numeroCarrera])
+  );
+
+  if (carrerasConResultado.length === 0) {
+    return (
+      <EmptyState
+        title="Sin resultados cargados"
+        description="A medida que cargues resultados, aparecerán aquí en orden de carrera."
+      />
+    );
+  }
+
+  return (
+    <div className="resultado-loaded-card">
+      <h2>Resultados cargados</h2>
+
+      <div className="table-fit">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Carrera</th>
+              <th>1er lugar</th>
+              <th>2do lugar</th>
+              <th>3er lugar</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {carrerasConResultado.map((carrera) => {
+              const numero = carrera.numeroCarrera;
+              const resultadoCarrera = resultado?.resultados[numero];
+
+              return (
+                <tr key={carrera.id}>
+                  <td>Carrera {numero}</td>
+                  <td>{resultadoCarrera?.primero ?? "-"}</td>
+                  <td>{resultadoCarrera?.segundo ?? "-"}</td>
+                  <td>{resultadoCarrera?.tercero ?? "-"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };

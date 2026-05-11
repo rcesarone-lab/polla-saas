@@ -1,3 +1,4 @@
+import { PageHeader } from "../components/layout/PageHeader";
 import { useEffect, useState } from "react";
 import { Fragment } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -7,6 +8,7 @@ import { calcularRanking } from "../domain/scoring";
 import { getResultadoByJornada } from "../services/resultados.service";
 import { getCarrerasByJornada } from "../services/carreras.service";
 import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
+import { EmptyState } from "../components/ui/EmptyState";
 import {
   exportarHistoricoCSV,
   exportarJugadasJornadaCSV,
@@ -50,78 +52,85 @@ export const Historico = () => {
 
   return (
     <div>
-      <div className="page-header-actions">
-        <h1>Histórico de jornadas</h1>
+      <div className="sticky-toolbar">
+        <PageHeader
+          title="Histórico de jornadas"
+          subtitle="Consulta snapshots históricos, rankings y trazabilidad operacional."
+          actions={
+            <button
+              type="button"
+              className="secondary-button"
+              disabled={jornadasOrdenadas.length === 0}
+              onClick={() => {
+                const historicoExport = jornadasOrdenadas.map((jornada) => {
+                  const jugadasDeLaJornada = jugadas.filter(
+                    (jugada) => jugada.jornadaId === jornada.id
+                  );
 
-        <button
-          type="button"
-          className="secondary-button"
-          disabled={jornadasOrdenadas.length === 0}
-          onClick={() => {
-            const historicoExport = jornadasOrdenadas.map((jornada) => {
-              const jugadasDeLaJornada = jugadas.filter(
-                (jugada) => jugada.jornadaId === jornada.id
-              );
+                  const resultado = getResultadoByJornada(jornada.id);
+                  const carrerasDeLaJornada = getCarrerasByJornada(jornada.id);
 
-              const resultado = getResultadoByJornada(jornada.id);
-              const carrerasDeLaJornada = getCarrerasByJornada(jornada.id);
+                  const estadoJornada = calcularEstadoJornada(
+                    carrerasDeLaJornada,
+                    resultado,
+                    jornada.estadoCierre === "FINALIZADA"
+                  );
 
-              const estadoJornada = calcularEstadoJornada(
-                carrerasDeLaJornada,
-                resultado,
-                jornada.estadoCierre === "FINALIZADA"
-              );
+                  const ranking =
+                    jornada.snapshotFinal?.ranking ??
+                    (resultado
+                      ? calcularRanking(jugadasDeLaJornada, resultado)
+                      : []);
 
-              const ranking =
-                jornada.snapshotFinal?.ranking ??
-                (resultado
-                  ? calcularRanking(jugadasDeLaJornada, resultado)
-                  : []);
+                  const ganador = jornada.snapshotFinal
+                    ? {
+                      nombre: jornada.snapshotFinal.ganador,
+                      puntos: jornada.snapshotFinal.puntosGanador,
+                    }
+                    : ranking[0];
 
-              const ganador = jornada.snapshotFinal
-                ? {
-                  nombre: jornada.snapshotFinal.ganador,
-                  puntos: jornada.snapshotFinal.puntosGanador,
-                }
-                : ranking[0];
+                  return {
+                    fecha: jornada.fecha,
+                    nombre: jornada.nombre,
+                    estado: getEstadoJornadaLabel(
+                      estadoJornada,
+                      jornada.reaperturas ?? 0
+                    ),
+                    totalJugadas: jugadasDeLaJornada.length,
+                    ganador: ganador ? ganador.nombre : "-",
+                    puntosGanador: ganador ? ganador.puntos : "-",
+                    top3:
+                      ranking.length === 0
+                        ? "-"
+                        : ranking
+                          .slice(0, 3)
+                          .map(
+                            (r, index) =>
+                              `${index + 1}. ${r.nombre} (${r.puntos})`
+                          )
+                          .join(" | "),
+                    reaperturas: jornada.reaperturas ?? 0,
+                    fechaFinalizacion: jornada.fechaFinalizacion
+                      ? new Date(jornada.fechaFinalizacion).toLocaleString()
+                      : "-",
+                  };
+                });
 
-              return {
-                fecha: jornada.fecha,
-                nombre: jornada.nombre,
-                estado: getEstadoJornadaLabel(
-                  estadoJornada,
-                  jornada.reaperturas ?? 0
-                ),
-                totalJugadas: jugadasDeLaJornada.length,
-                ganador: ganador ? ganador.nombre : "-",
-                puntosGanador: ganador ? ganador.puntos : "-",
-                top3:
-                  ranking.length === 0
-                    ? "-"
-                    : ranking
-                      .slice(0, 3)
-                      .map(
-                        (r, index) =>
-                          `${index + 1}. ${r.nombre} (${r.puntos})`
-                      )
-                      .join(" | "),
-                reaperturas: jornada.reaperturas ?? 0,
-                fechaFinalizacion: jornada.fechaFinalizacion
-                  ? new Date(jornada.fechaFinalizacion).toLocaleString()
-                  : "-",
-              };
-            });
-
-            exportarHistoricoCSV(historicoExport);
-          }}
-        >
-          Exportar histórico CSV
-        </button>
+                exportarHistoricoCSV(historicoExport);
+              }}
+            >
+              Exportar histórico CSV
+            </button>
+          }
+        />
       </div>
 
       <div className="card">
         {jornadasOrdenadas.length === 0 ? (
-          <p>No hay jornadas cargadas.</p>
+          <EmptyState
+            title="Sin jornadas históricas"
+            description="Cuando finalices jornadas operacionales aparecerán snapshots históricos y rankings congelados."
+          />
         ) : (
           <div className="table-scroll">
             <table className="table">
@@ -138,7 +147,7 @@ export const Historico = () => {
                   <th>Top 3</th>
                   <th>Finalización</th>
                   <th>Reaperturas</th>
-                  <th>Acciones</th>
+                  <th>Gestión</th>
                 </tr>
               </thead>
 
@@ -246,8 +255,12 @@ export const Historico = () => {
 
                         <td>
                           <div className="actions-row">
-                            <button onClick={() => changeJornada(jornada.id)}>
-                              Seleccionar
+                            <button
+                              type="button"
+                              className="secondary-button"
+                              onClick={() => changeJornada(jornada.id)}
+                            >
+                              Activar
                             </button>
 
                             <button
@@ -261,9 +274,7 @@ export const Historico = () => {
                                 )
                               }
                             >
-                              {detalleVisible === jornada.id
-                                ? "Ocultar"
-                                : "Ver detalle"}
+                              {detalleVisible === jornada.id ? "Cerrar" : "Detalle"}
                             </button>
                           </div>
                         </td>
@@ -272,10 +283,16 @@ export const Historico = () => {
                       {detalleVisible === jornada.id && (
                         <tr>
                           <td colSpan={12}>
-                            <div className="historico-detail-grid">
-                              <div className="card historico-detail-main">
+                            <div className="historico-expanded-panel">
+                              <div className="historico-expanded-main">
                                 <div className="historico-detail-header">
-                                  <h3>Detalle histórico</h3>
+                                  <div>
+                                    <h3>Detalle histórico</h3>
+
+                                    <p className="section-description">
+                                      Snapshot congelado de la jornada seleccionada.
+                                    </p>
+                                  </div>
 
                                   <div className="historico-export-actions">
                                     <button
@@ -307,7 +324,9 @@ export const Historico = () => {
                                           jugadas: jugadasDeLaJornada.map((jugada) => ({
                                             participante: jugada.nombre,
                                             jugadas: jugada.jugadas,
-                                            puntos: resultado ? calcularRanking([jugada], resultado)[0]?.puntos ?? 0 : 0,
+                                            puntos: resultado
+                                              ? calcularRanking([jugada], resultado)[0]?.puntos ?? 0
+                                              : 0,
                                           })),
                                         })
                                       }
@@ -343,62 +362,106 @@ export const Historico = () => {
                                   </div>
                                 </div>
 
-                                <p>
-                                  <strong>Fecha:</strong> {jornada.fecha}
-                                </p>
+                                <div className="historico-detail-summary-grid">
+                                  <div className="historico-summary-item">
+                                    <span>Fecha</span>
+                                    <strong>{jornada.fecha}</strong>
+                                  </div>
 
-                                <p>
-                                  <strong>Estado:</strong>{" "}
-                                  {getEstadoJornadaLabel(
-                                    estadoJornada,
-                                    jornada.reaperturas ?? 0
-                                  )}
-                                </p>
+                                  <div className="historico-summary-item">
+                                    <span>Estado</span>
+                                    <strong>
+                                      {getEstadoJornadaLabel(
+                                        estadoJornada,
+                                        jornada.reaperturas ?? 0
+                                      )}
+                                    </strong>
+                                  </div>
 
-                                <p>
-                                  <strong>Progreso:</strong>{" "}
-                                  {progresoJornada.completadas}/
-                                  {progresoJornada.total} carreras (
-                                  {progresoJornada.porcentaje}%)
-                                </p>
+                                  <div className="historico-summary-item">
+                                    <span>Progreso</span>
+                                    <strong>
+                                      {progresoJornada.completadas}/{progresoJornada.total} ·{" "}
+                                      {progresoJornada.porcentaje}%
+                                    </strong>
+                                  </div>
 
-                                <p>
-                                  <strong>Finalización:</strong>{" "}
-                                  {jornada.fechaFinalizacion
-                                    ? new Date(
-                                      jornada.fechaFinalizacion
-                                    ).toLocaleString()
-                                    : "-"}
-                                </p>
+                                  <div className="historico-summary-item">
+                                    <span>Finalización</span>
+                                    <strong>
+                                      {jornada.fechaFinalizacion
+                                        ? new Date(jornada.fechaFinalizacion).toLocaleString()
+                                        : "-"}
+                                    </strong>
+                                  </div>
 
-                                <p>
-                                  <strong>Reaperturas:</strong>{" "}
-                                  {jornada.reaperturas ?? 0}
-                                </p>
+                                  <div className="historico-summary-item">
+                                    <span>Reaperturas</span>
+                                    <strong>{jornada.reaperturas ?? 0}</strong>
+                                  </div>
 
-                                <p>
-                                  <strong>Pendientes:</strong>{" "}
-                                  {carrerasPendientes.length === 0
-                                    ? "-"
-                                    : carrerasPendientes.join(", ")}
-                                </p>
+                                  <div className="historico-summary-item">
+                                    <span>Pendientes</span>
+                                    <strong>
+                                      {carrerasPendientes.length === 0
+                                        ? "-"
+                                        : carrerasPendientes.join(", ")}
+                                    </strong>
+                                  </div>
+                                </div>
 
-                                <h4>Ranking completo</h4>
+                                <div className="historico-ranking-layout">
+                                  <div className="historico-ranking-card">
+                                    <h4>Top ranking</h4>
 
-                                {ranking.length === 0 ? (
-                                  <p>No disponible</p>
-                                ) : (
-                                  <ol>
-                                    {ranking.map((r, index) => (
-                                      <li key={`${r.nombre}-${index}`}>
-                                        {r.nombre} → {r.puntos} pts
-                                      </li>
-                                    ))}
-                                  </ol>
-                                )}
+                                    {ranking.length === 0 ? (
+                                      <EmptyState
+                                        title="Ranking no disponible"
+                                        description="No hay ranking calculado para esta jornada."
+                                      />
+                                    ) : (
+                                      <div className="historico-ranking-podium">
+                                        {ranking.slice(0, 6).map((r, index) => (
+                                          <div key={`${r.nombre}-${index}`} className="podium-card">
+                                            <span>{index + 1}</span>
+                                            <strong>{r.nombre}</strong>
+                                            <em>{r.puntos} pts</em>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  <div className="historico-ranking-card">
+                                    <h4>Ranking completo</h4>
+
+                                    {ranking.length === 0 ? (
+                                      <EmptyState
+                                        title="Sin ranking"
+                                        description="No hay datos suficientes para mostrar el ranking."
+                                      />
+                                    ) : (
+                                      <ol className="historico-ranking-list">
+                                        {ranking.map((r, index) => (
+                                          <li key={`${r.nombre}-${index}`}>
+                                            <span>{index + 1}</span>
+                                            <strong>{r.nombre}</strong>
+                                            <em>{r.puntos} pts</em>
+                                          </li>
+                                        ))}
+                                      </ol>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
 
-                              <div className="historico-auditoria-side">
+                              <div className="historico-expanded-audit">
+                                <h3>Auditoría operacional</h3>
+
+                                <p className="section-description">
+                                  Últimos eventos relevantes ejecutados sobre la jornada.
+                                </p>
+
                                 <AuditoriaPanel
                                   jornadaId={jornada.id}
                                   maxVisible={4}

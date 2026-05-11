@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
+import { PageHeader } from "../components/layout/PageHeader";
 import { ResultadoForm } from "../components/resultados/ResultadoForm";
+import { JornadaStatusCard } from "../components/jornada/JornadaStatusCard";
+import { EmptyState } from "../components/ui/EmptyState";
 import { useJornada } from "../hooks/useJornada";
 import { useResultados } from "../hooks/useResultados";
 import { useCarreras } from "../hooks/useCarreras";
@@ -8,7 +11,11 @@ import { useJugadas } from "../hooks/useJugadas";
 import { calcularRanking } from "../domain/scoring";
 import type { Resultado } from "../domain/types";
 import { validarResultado } from "../domain/validarResultado";
-import { calcularEstadoJornada } from "../domain/jornadaStatus";
+import {
+  calcularEstadoJornada,
+  calcularProgresoJornada,
+  getCarrerasPendientes,
+} from "../domain/jornadaStatus";
 
 export const Resultados = () => {
   const { jornada, closeJornada, reopenJornada } = useJornada();
@@ -21,6 +28,10 @@ export const Resultados = () => {
   const { retirados } = useRetirados(jornada?.id);
   const { jugadas } = useJugadas();
 
+  const [preguntoCierre, setPreguntoCierre] = useState(false);
+
+  const jornadaFinalizada = jornada?.estadoCierre === "FINALIZADA";
+
   const jugadasDeLaJornada = jornada
     ? jugadas.filter((j) => j.jornadaId === jornada.id)
     : [];
@@ -29,11 +40,11 @@ export const Resultados = () => {
     ? calcularRanking(jugadasDeLaJornada, resultado)
     : [];
 
-  const [preguntoCierre, setPreguntoCierre] = useState(false);
-
-  const jornadaFinalizada = jornada?.estadoCierre === "FINALIZADA";
-
   const estadoDetectado = calcularEstadoJornada(carreras, resultado);
+
+  const progresoJornada = calcularProgresoJornada(carreras, resultado);
+
+  const carrerasPendientes = getCarrerasPendientes(carreras, resultado);
 
   const jornadaReabierta = (jornada?.reaperturas ?? 0) > 0;
 
@@ -42,9 +53,7 @@ export const Resultados = () => {
     !jornadaFinalizada &&
     estadoDetectado === "FINALIZADA";
 
-  const mostrarPreguntaCierre =
-    puedeCerrar && !jornadaReabierta;
-
+  const mostrarPreguntaCierre = puedeCerrar && !jornadaReabierta;
 
   useEffect(() => {
     if (!jornada) return;
@@ -67,21 +76,19 @@ export const Resultados = () => {
         })),
       });
     }
-  }, [puedeCerrar, preguntoCierre, jornada, closeJornada]);
-
-  if (!jornada) {
-    return (
-      <div className="card">
-        <h1>Resultados</h1>
-        <p>No hay una jornada creada.</p>
-        <p>Crea una jornada antes de cargar resultados.</p>
-      </div>
-    );
-  }
+  }, [
+    puedeCerrar,
+    preguntoCierre,
+    jornada,
+    closeJornada,
+    mostrarPreguntaCierre,
+    rankingFinal,
+  ]);
 
   const handleSaveResultado = (nuevoResultado: Resultado) => {
     if (jornadaFinalizada) {
       alert("La jornada está finalizada. No se pueden modificar resultados.");
+
       return;
     }
 
@@ -98,46 +105,60 @@ export const Resultados = () => {
     }
   };
 
+  if (!jornada) {
+    return (
+      <div>
+        <PageHeader
+          title="Resultados"
+          subtitle="Carga progresiva de posiciones por carrera y control de resultados parciales."
+        />
+
+        <EmptyState
+          title="No hay jornada activa"
+          description="Crea o selecciona una jornada antes de cargar resultados."
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="grid">
-      <h1>Resultados</h1>
+    <div>
+      <PageHeader
+        title="Resultados"
+        subtitle="Carga progresiva de posiciones por carrera y control de resultados parciales."
+      />
 
-      <div className="card">
-        <h2>Jornada</h2>
-        <p>
-          {jornada.nombre} - {jornada.fecha}
-        </p>
+      <JornadaStatusCard jornada={jornada} />
 
-        {jornadaFinalizada && (
-          <p className="status-ok">Jornada finalizada</p>
-        )}
+      <div className="kpi-grid">
+        <div className="card compact-card">
+          <span className="mini-label">Carreras completas</span>
+          <strong className="mini-value">
+            {progresoJornada.completadas}/{progresoJornada.total}
+          </strong>
+        </div>
 
-        {jornadaFinalizada && (
-          <button
-            type="button"
-            className="secondary-button"
-            onClick={() => {
-              const confirmar = confirm(
-                "¿Deseas reabrir esta jornada para modificar resultados?"
-              );
+        <div className="card compact-card">
+          <span className="mini-label">Pendientes</span>
+          <strong className="mini-value">
+            {carrerasPendientes.length}
+          </strong>
+        </div>
 
-              if (confirmar) {
-                reopenJornada(jornada.id);
-              }
-            }}
-          >
-            Reabrir jornada
-          </button>
-        )}
+        <div className="card compact-card">
+          <span className="mini-label">Jugadas</span>
+          <strong className="mini-value">
+            {jugadasDeLaJornada.length}
+          </strong>
+        </div>
       </div>
 
       {puedeCerrar && (
-        <div
-          className="card"
-          style={{ background: "#ecfdf5", color: "#065f46" }}
-        >
-          <h2>Jornada lista para finalizar</h2>
-          <p>Todos los resultados están completos.</p>
+        <div className="card ready-card">
+          <div>
+            <h2>Jornada lista para finalizar</h2>
+            <p>Todos los resultados están completos.</p>
+          </div>
 
           <button
             type="button"
@@ -157,17 +178,42 @@ export const Resultados = () => {
         </div>
       )}
 
-      <div className="card">
-        <p>
-          Puedes cargar resultados parcialmente. Luego puedes volver y
-          actualizarlos carrera por carrera.
-        </p>
+      {jornadaFinalizada && (
+        <div className="card locked-card">
+          <div>
+            <h2>Jornada finalizada</h2>
+            <p>Los resultados están bloqueados para preservar el snapshot.</p>
+          </div>
 
-        {jornadaFinalizada && (
-          <p className="status-ok">
-            Esta jornada está finalizada. La carga de resultados está bloqueada.
-          </p>
-        )}
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              const confirmar = confirm(
+                "¿Deseas reabrir esta jornada para modificar resultados?"
+              );
+
+              if (confirmar) {
+                reopenJornada(jornada.id);
+              }
+            }}
+          >
+            Reabrir jornada
+          </button>
+        </div>
+      )}
+
+      <div className="card">
+        <div className="section-header-inline">
+          <div>
+            <h2>Carga de resultados</h2>
+
+            <p className="section-description">
+              Puedes guardar resultados parciales y completarlos carrera por
+              carrera.
+            </p>
+          </div>
+        </div>
 
         <ResultadoForm
           resultado={resultado}
@@ -197,37 +243,42 @@ export const Resultados = () => {
       </div>
 
       <div className="card">
-        <h2>Resultado cargado</h2>
+        <h2>Resultados x Carrera</h2>
 
         {!resultado ? (
-          <p>No hay resultados cargados para esta jornada.</p>
+          <EmptyState
+            title="No hay resultados cargados"
+            description="Carga resultados para ver el detalle por carrera."
+          />
         ) : (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Carrera</th>
-                <th>1er lugar</th>
-                <th>2do lugar</th>
-                <th>3er lugar</th>
-              </tr>
-            </thead>
+          <div className="table-fit">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Carrera</th>
+                  <th>1er lugar</th>
+                  <th>2do lugar</th>
+                  <th>3er lugar</th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {carreras.map((carrera) => {
-                const numero = carrera.numeroCarrera;
-                const resultadoCarrera = resultado.resultados[numero];
+              <tbody>
+                {carreras.map((carrera) => {
+                  const numero = carrera.numeroCarrera;
+                  const resultadoCarrera = resultado.resultados[numero];
 
-                return (
-                  <tr key={carrera.id}>
-                    <td>Carrera {numero}</td>
-                    <td>{resultadoCarrera?.primero ?? "-"}</td>
-                    <td>{resultadoCarrera?.segundo ?? "-"}</td>
-                    <td>{resultadoCarrera?.tercero ?? "-"}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                  return (
+                    <tr key={carrera.id}>
+                      <td>Carrera {numero}</td>
+                      <td>{resultadoCarrera?.primero ?? "-"}</td>
+                      <td>{resultadoCarrera?.segundo ?? "-"}</td>
+                      <td>{resultadoCarrera?.tercero ?? "-"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

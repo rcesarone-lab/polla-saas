@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
+import { PageHeader } from "../components/layout/PageHeader";
+import { JornadaStatusCard } from "../components/jornada/JornadaStatusCard";
+import { EmptyState } from "../components/ui/EmptyState";
+import { RetiradosPanel } from "../components/retirados/RetiradosPanel";
+import { CarrerasPanel } from "../components/carreras/CarrerasPanel";
+import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
+
 import { useConfiguracion } from "../hooks/useConfiguracion";
-import type { ConfiguracionPuntos } from "../domain/types";
 import { useJornada } from "../hooks/useJornada";
 import { useRetirados } from "../hooks/useRetirados";
-import { RetiradosPanel } from "../components/retirados/RetiradosPanel";
 import { useCarreras } from "../hooks/useCarreras";
-import { CarrerasPanel } from "../components/carreras/CarrerasPanel";
 import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
+
+import type { ConfiguracionPuntos } from "../domain/types";
 import { obtenerSiguienteDisponible } from "../domain/reasignarCaballo";
 import { getRetiradosByJornada } from "../services/retirados.service";
-import { AuditoriaPanel } from "../components/auditoria/AuditoriaPanel";
 import { registrarAuditoria } from "../services/auditoria.service";
-
 
 export const Configuracion = () => {
   const { configuracion, updateConfiguracion, deleteConfiguracion } =
@@ -32,6 +36,8 @@ export const Configuracion = () => {
   );
 
   const { jugadas, updateJugada } = useJugadas();
+  const { resultado } = useResultados(jornada?.id);
+
   const [primerLugar, setPrimerLugar] = useState("");
   const [segundoLugar, setSegundoLugar] = useState("");
   const [tercerLugar, setTercerLugar] = useState("");
@@ -84,7 +90,6 @@ export const Configuracion = () => {
   };
 
   const handleEliminarRegla = () => {
-
     if (jornadaFinalizada) {
       alert("La jornada está finalizada. No se puede eliminar la regla.");
       return;
@@ -165,8 +170,6 @@ export const Configuracion = () => {
     }
   };
 
-  const { resultado } = useResultados(jornada?.id);
-
   const tieneDatosAsociadosCarrera = (numeroCarrera: number) => {
     if (!jornada) return false;
 
@@ -201,9 +204,7 @@ export const Configuracion = () => {
       return;
     }
 
-    const confirmar = confirm(
-      `¿Eliminar la carrera ${carrera.numeroCarrera}?`
-    );
+    const confirmar = confirm(`¿Eliminar la carrera ${carrera.numeroCarrera}?`);
 
     if (confirmar) {
       eliminarCarrera(id);
@@ -240,44 +241,82 @@ export const Configuracion = () => {
 
   if (!jornada) {
     return (
-      <div className="card">
-        <h1>Configuración</h1>
-        <p>No hay una jornada creada.</p>
-        <p>Crea una jornada antes de configurar carreras válidas o retirados.</p>
+      <div>
+        <PageHeader
+          title="Configuración"
+          subtitle="Administra reglas de puntuación, carreras válidas, retirados y auditoría operacional."
+        />
+
+        <EmptyState
+          title="Sin jornada activa"
+          description="Crea una jornada antes de configurar reglas, carreras o retirados."
+        />
       </div>
     );
   }
 
   return (
-    <div className="grid">
-      <h1>Configuración</h1>
+    <div>
+      <PageHeader
+        title="Configuración"
+        subtitle="Administra reglas de puntuación, carreras válidas, retirados y auditoría operacional."
+      />
 
-      <div className="config-grid">
+      <JornadaStatusCard jornada={jornada} />
+
+      <div className="config-primary-grid">
+        <div className="card">
+          <CarrerasPanel
+            carreras={carreras}
+            disabled={jornadaFinalizada}
+            onAdd={jornadaFinalizada ? undefined : agregarCarrera}
+            onDelete={jornadaFinalizada ? undefined : handleEliminarCarrera}
+            onDeleteAll={
+              jornadaFinalizada ? undefined : handleEliminarTodasCarreras
+            }
+          />
+        </div>
+
+        <div className="card">
+          <RetiradosPanel
+            retirados={retirados}
+            carreras={carreras}
+            disabled={jornadaFinalizada}
+            onAdd={jornadaFinalizada ? undefined : handleAgregarRetirado}
+            onDelete={jornadaFinalizada ? undefined : eliminarRetirado}
+          />
+        </div>
+      </div>
+
+      <div className="config-ops-grid">
         <div className="card">
           <h2>Regla de puntuación</h2>
 
           {configuracion ? (
-            <div className="score-summary-grid">
+            <div className="score-summary-grid compact-score-summary">
               <div className="score-badge">
                 1° {configuracion.primerLugar} pts
               </div>
+
               <div className="score-badge">
                 2° {configuracion.segundoLugar} pts
               </div>
+
               <div className="score-badge">
                 3° {configuracion.tercerLugar} pts
               </div>
             </div>
           ) : (
-            <p>No hay reglas cargadas.</p>
+            <p className="section-description">
+              No hay regla de puntuación cargada.
+            </p>
           )}
-
-          <p className="score-edit-title">Editar regla</p>
 
           <form onSubmit={handleSubmit} className="compact-form">
             <div className="score-fields">
               <div className="form-field">
                 <label>1°</label>
+
                 <input
                   type="number"
                   disabled={jornadaFinalizada}
@@ -288,6 +327,7 @@ export const Configuracion = () => {
 
               <div className="form-field">
                 <label>2°</label>
+
                 <input
                   type="number"
                   disabled={jornadaFinalizada}
@@ -298,6 +338,7 @@ export const Configuracion = () => {
 
               <div className="form-field">
                 <label>3°</label>
+
                 <input
                   type="number"
                   disabled={jornadaFinalizada}
@@ -321,49 +362,38 @@ export const Configuracion = () => {
               )}
             </div>
           </form>
-          
+        </div>
+
+        <div className="config-kpi-panel vertical">
+          <div className="card compact-card">
+            <span className="mini-label">Carreras</span>
+            <strong className="mini-value">{carreras.length}</strong>
+          </div>
+
+          <div className="card compact-card">
+            <span className="mini-label">Retirados</span>
+            <strong className="mini-value">{retirados.length}</strong>
+          </div>
+
+          <div className="card compact-card">
+            <span className="mini-label">Regla</span>
+            <strong className="mini-value">
+              {configuracion ? "Activa" : "Pendiente"}
+            </strong>
+          </div>
+
+          <div className="card compact-card">
+            <span className="mini-label">Estado</span>
+            <strong className={jornadaFinalizada ? "status-ok" : "status-warn"}>
+              {jornadaFinalizada ? "Finalizada" : "Editable"}
+            </strong>
+          </div>
+        </div>
+
+        <div className="card config-audit-card">
+          <h2>Auditoría operacional</h2>
+
           <AuditoriaPanel jornadaId={jornada.id} maxVisible={3} />
-
-        </div>
-
-        <div className="card">
-          <CarrerasPanel
-            carreras={carreras}
-            disabled={jornadaFinalizada}
-            onAdd={
-              jornadaFinalizada
-                ? undefined
-                : agregarCarrera
-            }
-            onDelete={
-              jornadaFinalizada
-                ? undefined
-                : handleEliminarCarrera
-            }
-            onDeleteAll={
-              jornadaFinalizada
-                ? undefined
-                : handleEliminarTodasCarreras
-            }
-          />
-        </div>
-
-        <div className="card">
-          <RetiradosPanel
-            retirados={retirados}
-            carreras={carreras}
-            disabled={jornadaFinalizada}
-            onAdd={
-              jornadaFinalizada
-                ? undefined
-                : handleAgregarRetirado
-            }
-            onDelete={
-              jornadaFinalizada
-                ? undefined
-                : eliminarRetirado
-            }
-          />
         </div>
       </div>
     </div>

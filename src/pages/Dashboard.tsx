@@ -1,8 +1,10 @@
+import { PageHeader } from "../components/layout/PageHeader";
 import { useJugadas } from "../hooks/useJugadas";
 import { useResultados } from "../hooks/useResultados";
 import { useJornada } from "../hooks/useJornada";
 import { calcularPuntaje } from "../domain/scoring";
 import { useCarreras } from "../hooks/useCarreras";
+import { KpiCard } from "../components/dashboard/KpiCard";
 import {
   calcularEstadoJornada,
   calcularProgresoJornada,
@@ -53,106 +55,121 @@ export const Dashboard = () => {
 
   return (
     <div>
-      <h1>Panel</h1>
+      <PageHeader
+        title="Panel ejecutivo"
+        subtitle="Vista rápida de la jornada activa, avance, líder y próxima acción."
+      />
 
-      <div className="dashboard-grid">
-        <div className="card">
-          <h2>Jornada actual</h2>
+      <div className="kpi-grid">
+        <KpiCard
+          label="Jugadas"
+          value={jugadasDeLaJornada.length}
+          tone="success"
+        />
 
-          <p>
-            {jornada.nombre} - {jornada.fecha}
-          </p>
+        <KpiCard
+          label="Total carreras"
+          value={`${progresoJornada.completadas}/${progresoJornada.total}`}
+          tone="warning"
+        />
+
+        <KpiCard
+          label="Estado"
+          value={getEstadoJornadaLabel(
+            estadoJornada,
+            jornada.reaperturas ?? 0
+          )}
+          tone={estadoJornada === "FINALIZADA" ? "success" : "default"}
+        />
+
+        <KpiCard
+          label={estadoJornada === "FINALIZADA" ? "Ganador" : "Líder"}
+          value={ganador ? ganador.nombre : "-"}
+          tone={ganador ? "success" : "default"}
+        />
+      </div>
+
+      <div className="dashboard-executive-grid">
+        <div className="card dashboard-main-card">
+          <h2>Jornada activa</h2>
+
+          <div className="dashboard-summary-row">
+            <span>Nombre</span>
+            <strong>{jornada.nombre}</strong>
+          </div>
+
+          <div className="dashboard-summary-row">
+            <span>Fecha</span>
+            <strong>{jornada.fecha}</strong>
+          </div>
+
+          <div className="dashboard-summary-row">
+            <span>Avance</span>
+            <strong>
+              {progresoJornada.completadas}/{progresoJornada.total} carreras ·{" "}
+              {progresoJornada.porcentaje}%
+            </strong>
+          </div>
 
           {jornada.fechaFinalizacion && (
-            <p className="status-ok">
-              Finalizada: {new Date(jornada.fechaFinalizacion).toLocaleString()}
-            </p>
+            <div className="dashboard-summary-row">
+              <span>Finalización</span>
+              <strong>
+                {new Date(jornada.fechaFinalizacion).toLocaleString()}
+              </strong>
+            </div>
           )}
 
           {(jornada.reaperturas ?? 0) > 0 && (
-            <p className="status-warn">
-              Reaperturas: {jornada.reaperturas}
-            </p>
+            <div className="dashboard-summary-row warning">
+              <span>Reaperturas</span>
+              <strong>{jornada.reaperturas}</strong>
+            </div>
           )}
         </div>
 
-        <div className="card">
-          <h2>Total de jugadas</h2>
-          <p>{jugadasDeLaJornada.length}</p>
-        </div>
-
-        <div className="card">
-          <h2>Progreso</h2>
-          <p>
-            {progresoJornada.completadas} / {progresoJornada.total} carreras
-          </p>
-          <p>{progresoJornada.porcentaje}% completado</p>
-        </div>
-
-        <div className="card">
-          <h2>Estado</h2>
-          <p className={getEstadoJornadaClass(estadoJornada, jornada.reaperturas ?? 0)}>
-            {getEstadoJornadaLabel(estadoJornada, jornada.reaperturas ?? 0)}
-          </p>
-        </div>
-
-        <div className="card">
-          <h2>Carreras completas</h2>
-
-          {carrerasCompletas.length === 0 ? (
-            <p>Ninguna</p>
-          ) : (
-            <p>{carrerasCompletas.join(", ")}</p>
-          )}
-        </div>
-
-        <div className="card">
-          <h2>Carreras pendientes</h2>
-
-          {carrerasPendientes.length === 0 ? (
-            <p>Ninguna</p>
-          ) : (
-            <p>{carrerasPendientes.join(", ")}</p>
-          )}
-        </div>
-
-        <div className="card">
-          <h2>{estadoJornada === "FINALIZADA" ? "Ganador" : "Líder actual"}</h2>
-
-          {!ganador ? (
-            <p>No disponible</p>
-          ) : (
-            <p>
-              {ganador.nombre} → {ganador.puntos} pts
-            </p>
-          )}
-        </div>
-
-        <div className="card">
+        <div className="card dashboard-main-card">
           <h2>
             {estadoJornada === "FINALIZADA"
-              ? "Ranking final"
-              : "Ranking parcial"}
+              ? "Top final"
+              : "Top parcial"}
           </h2>
 
           {ranking.length === 0 ? (
             <p>No disponible</p>
           ) : (
-            <>
-              <ol>
-                {ranking.slice(0, 3).map((r, i) => (
-                  <li key={`${r.nombre}-${i}`}>
-                    {r.nombre} → {r.puntos} puntos
-                  </li>
-                ))}
-              </ol>
+            <ol className="dashboard-top-list">
+              {ranking.slice(0, 3).map((r, i) => (
+                <li key={`${r.nombre}-${i}`}>
+                  <span>{i + 1}</span>
+                  <strong>{r.nombre}</strong>
+                  <em>{r.puntos} pts</em>
+                </li>
+              ))}
+            </ol>
+          )}
 
-              {estadoJornada !== "FINALIZADA" && (
-                <p className="ranking-note">
-                  Ranking calculado con los resultados cargados hasta ahora.
-                </p>
-              )}
-            </>
+          {estadoJornada !== "FINALIZADA" && ranking.length > 0 && (
+            <p className="ranking-note">
+              Calculado con resultados cargados hasta ahora.
+            </p>
+          )}
+        </div>
+
+        <div className="card dashboard-main-card">
+          <h2>Próxima acción</h2>
+
+          {progresoJornada.total === 0 ? (
+            <p>Configura carreras válidas para comenzar la operación.</p>
+          ) : carrerasPendientes.length > 0 ? (
+            <p>
+              Faltan resultados para las carreras:{" "}
+              <strong>{carrerasPendientes.join(", ")}</strong>.
+            </p>
+          ) : estadoJornada !== "FINALIZADA" ? (
+            <p>Todos los resultados están cargados. La jornada puede finalizarse.</p>
+          ) : (
+            <p>Jornada finalizada. El snapshot histórico está congelado.</p>
           )}
         </div>
       </div>

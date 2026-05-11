@@ -15,7 +15,6 @@ export const AuditoriaPanel = ({
 
   return (
     <div className={compact ? "audit-card compact" : "audit-card"}>
-      <h3>Auditoría operacional</h3>
 
       {eventos.length === 0 ? (
         <p>No hay eventos registrados.</p>

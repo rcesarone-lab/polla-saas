@@ -6,6 +6,7 @@ import { Resultados } from "./pages/Resultados";
 import { Historico } from "./pages/Historico";
 import { Configuracion } from "./pages/Configuracion";
 import { Admin } from "./pages/Admin";
+import { Operacion } from "./pages/Operacion";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/historico" element={<Historico />} />
           <Route path="/configuracion" element={<Configuracion />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/operacion" element={<Operacion />} />
         </Routes>
       </Layout>
     </BrowserRouter>
