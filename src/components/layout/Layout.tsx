@@ -188,6 +188,12 @@ export const Layout = ({ children }: Props) => {
           <span>Modo prototipo</span>
           <strong>LocalStorage</strong>
         </div>
+
+        <div className="sidebar-signature">
+          <strong>CRamirez</strong>
+          <span>Consultor de Sistemas</span>
+          <small>Legacy to SaaS</small>
+        </div>
       </aside>
 
       <main className="app-main">

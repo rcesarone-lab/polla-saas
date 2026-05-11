@@ -2503,3 +2503,26 @@ select {
   }
 }
 
+.sidebar-signature {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  display: grid;
+  gap: 0.2rem;
+  color: #cbd5e1;
+}
+
+.sidebar-signature strong {
+  color: #ffffff;
+  font-size: 0.85rem;
+}
+
+.sidebar-signature span {
+  font-size: 0.72rem;
+}
+
+.sidebar-signature small {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
